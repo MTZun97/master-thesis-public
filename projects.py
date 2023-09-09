@@ -2,12 +2,6 @@ import plotly.express as px
 import pandas as pd
 import pycountry
 
-def get_country_name(iso3_code):
-    try:
-        return pycountry.countries.get(alpha_3=iso3_code).name
-    except:
-        return 'Unknown'
-
 def project_count():
     filepath = 'data/Reference.xlsx'
     iea_data = pd.read_excel(filepath, header=0, sheet_name="iea_project")
@@ -38,11 +32,11 @@ def project_count():
         yaxis=dict(tickfont=dict(size=12)),
         legend=dict(xanchor="right", x=0.99, yanchor="top", y=0.99),
         showlegend=True,
-        plot_bgcolor="#E6E6FA",  # Greyish-blue color
+        plot_bgcolor="#E6E6FA",
         title_text="<b>Hydrogen Projects Count per Country</b>",
-        title_x=0.5,  # Center-align the title horizontally
+        title_x=0.5,  
         title_font=dict(size=18, family='Arial', color='black'),
-        margin=dict(b=50)  # Adjust the 'b' margin value to your preference
+        margin=dict(b=50)  
     )
 
 
