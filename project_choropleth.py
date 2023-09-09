@@ -50,7 +50,7 @@ def generate_choropleth(status="all"):
                         custom_data=[country_names['country'],
                                      country_names['normalized_capacity_Mwel']]
                         )
-
+    
     fig.update_coloraxes(colorbar_title='<b>' +
                          value.replace("normalized_capacity_Mwel", "") + "MWel/y" + '</b>')
     title = f"Total Current and Projected Installed Capacity per Country [Status - {status}]"
@@ -59,7 +59,7 @@ def generate_choropleth(status="all"):
                           title_x=0.5,
                           title_font=dict(family="Helvetica Neue, Arial", size=24, color='black'))
 
-    fig.update_layout(margin=dict(l=20, r=50, t=50, b=50))
+    fig.update_layout(margin=dict(l=10, r=10, t=50, b=50))
 
     fig.update_geos(
         showframe=False,
@@ -84,9 +84,9 @@ def generate_choropleth(status="all"):
             lenmode="pixels",
             len=400,
             yanchor='top',
-            y=0.98,
+            y=0.85,
             tickfont=dict(size=14),
-            x=0.92,
+            x=0.9,
             xanchor='left'
         )
     )
