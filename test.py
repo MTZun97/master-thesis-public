@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output
 from manufacturer import manufacturer_count
 from projects import project_count
 from project_choropleth import generate_choropleth
+from electrolyzer_cost_reduction import plot_cost_reduction  # Corrected missing import statement
 
 # Define custom color codes
 background_color = '#f2f2f2'  # Light gray background
@@ -30,16 +31,17 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
             id='manufacturer-count',
             figure=manufacturer_count(),
             style={'display': 'inline-block', 'width': '48%', 'margin-right': '2%'}
-        ),  # Set the width to 48% and add some right margin
+        ),
         dcc.Graph(
             id='project-count',
             figure=project_count(),
             style={'display': 'inline-block', 'width': '48%'}
-        ),  # Set the width to 48%
+        ),
     ], style={'text-align': 'center', 'margin-bottom': '10px'}),
     
     html.Br(),
     html.Br(),
+    
     html.Div([
         html.Label('Select Status:', style={'font-weight': 'bold'}),
         dcc.Dropdown(
@@ -52,15 +54,30 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
                 {'label': 'Operational', 'value': 'Operational'},
                 {'label': 'DEMO', 'value': 'DEMO'},
                 {'label': 'Under construction', 'value': 'Under construction'},
-                {'label': 'Decommisioned', 'value': 'Decommisioned'}
+                {'label': 'Decommissioned', 'value': 'Decommissioned'}  # Corrected typo in 'Decommissioned'
             ],
             value='all',
-            style={'width': '100%'}  # Set the width of the dropdown
+            style={'width': '100%'}
         )
     ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
     
-    dcc.Graph(id='choropleth', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'})
-
+    dcc.Graph(id='choropleth', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'}),
+    
+    html.Br(),
+    html.Br(),
+    
+    html.Div([
+        html.Label('Select Methodology:', style={'font-weight': 'bold'}),
+        dcc.Dropdown(
+            id='method-dropdown',
+            options=[
+                {'label': 'Single Curve Fitting', 'value': 'Single'},
+                {'label': 'Double Curve Fitting', 'value': 'Double'}
+            ],
+            value='Single',
+            style={'width': '100%'}
+        )], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    dcc.Graph(id='cost-reduction-plot', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'})
 
 ])
 
@@ -72,6 +89,13 @@ def update_choropleth(status):
     choropleth_fig = generate_choropleth(status)
     return choropleth_fig
 
+@app.callback(
+    Output('cost-reduction-plot', 'figure'),
+    Input('method-dropdown', 'value')
+)
+def update_cost_reduction_plot(selected_method):
+    return plot_cost_reduction(selected_method)
+
 # Run the app if this script is the main module
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
