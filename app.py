@@ -4,20 +4,20 @@ from dash.dependencies import Input, Output
 from manufacturer import manufacturer_count
 from projects import project_count
 from project_choropleth import generate_choropleth
-from electrolyzer_cost_reduction import plot_cost_reduction  # Corrected missing import statement
+from electrolyzer_cost_reduction import plot_cost_reduction  
 from global_lcoh import capacity_factor, global_lcoh
 from sensitivity import sensitivity_analysis
 
-# Define custom color codes
-background_color = '#f2f2f2'  # Light gray background
-header_color = '#333333'  # Dark gray header
-text_color = '#000000'  # Black text color
-block_color = '#ffffff'  # White block background color
 
-# Initialize the Dash app
+background_color = '#f2f2f2'  
+header_color = '#333333'  
+text_color = '#000000'  
+block_color = '#ffffff' 
+
+
 app = dash.Dash(__name__)
 
-# Define the layout of your app
+
 app.layout = html.Div(style={'background-color': background_color, 'padding': '20px'}, children=[
     html.Div([
         html.H1('Cost Projection of Global Green Hydrogen Production Scenarios',
@@ -56,7 +56,7 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
                 {'label': 'Operational', 'value': 'Operational'},
                 {'label': 'DEMO', 'value': 'DEMO'},
                 {'label': 'Under construction', 'value': 'Under construction'},
-                {'label': 'Decommissioned', 'value': 'Decommissioned'}  # Corrected typo in 'Decommissioned'
+                {'label': 'Decommissioned', 'value': 'Decommissioned'}  
             ],
             value='all',
             style={'width': '100%'}
@@ -149,9 +149,9 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
             html.Label('Electricity Price ($/kWh)', style={'display': 'inline-block', 'width': '300px'}), 
             dcc.Input(id='elect_price', type='number', value=0.036, style={'width': '100px'})
         ], style={'margin-bottom': '10px'}),
-    ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '10px', 'margin': '10px', 'background-color': block_color}),
+    ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': block_color}),
     
-    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '10px', 'margin': '10px', 'background-color': block_color })
+    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color })
 
 
 ])
@@ -210,6 +210,6 @@ def update_tornado_chart(percent_change, startup_year, cap_factor, current_densi
         water_rate=water_rate,
         elect_price=elect_price
     )
-# Run the app if this script is the main module
+
 if __name__ == '__main__':
     app.run_server(debug=True)

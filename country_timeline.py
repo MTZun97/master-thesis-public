@@ -42,7 +42,6 @@ def create_timeline_plot(cost_target):
 
     sources_symbols = {'solar_lcoe': 'circle', 'onshore_wind_lcoe': 'square'}
 
-        
     # Add a trace for each country in the low and high data
     for df, trace_name, color in zip([results_df_low, results_df_high], ['Optimistic', 'Pessimistic'], colors):
         for idx, row in df.iterrows():

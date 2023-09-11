@@ -83,17 +83,17 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
     ordered_keys = sorted(keys, key=lambda x: max(abs(percentage_change[x]["low"]), abs(percentage_change[x]["high"])), reverse=False)
     display_labels = [label_mapping[key] for key in ordered_keys]
 
-    # Prepare data for the tornado chart
+
     low_data = [percentage_change[key]["low"] for key in ordered_keys]
     high_data = [percentage_change[key]["high"] for key in ordered_keys]
-    # Create lists to store the base, low and high values in the same order as ordered_keys
+
     base_values = [lcoh_base[key] for key in ordered_keys]
     low_values = [lcoh_low[key] for key in ordered_keys]
     high_values = [lcoh_high[key] for key in ordered_keys]
 
     fig = go.Figure()
 
-    # Adding low data (negative values)
+
     fig.add_trace(go.Bar(
         y=display_labels,
         x=low_data,
@@ -109,7 +109,7 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         )
     ))
 
-    # Adding high data
+
     fig.add_trace(go.Bar(
         y=display_labels,
         x=high_data,
@@ -125,7 +125,7 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         )
     ))
 
-    # Adding labels and title
+
     fig.update_layout(
         title='<b>Sensitivity Analysis of Green Hydrogen Production Cost<b>',
         xaxis_title='Percentage Change in LCOH (%)',
@@ -137,5 +137,5 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         title_font=dict(size=18, family='Arial Bold', color='black')
     )
 
-    # Show the plot
+
     return fig

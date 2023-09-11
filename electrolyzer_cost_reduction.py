@@ -24,7 +24,7 @@ def plot_cost_reduction(method):
     fig = px.line()
 
     line_styles = ['dot', 'dash', 'dashdot', 'solid']
-    colors = ['#c43932', '#4c72b0']  # Hex color codes
+    colors = ['#c43932', '#4c72b0'] 
     labels = ["time", "time+scaling", "time+learning", "time+scaling+learning"]
 
     for j, (data, color, title) in enumerate(zip([alk_data, pem_data], colors, ['Alkaline', 'PEM'])):

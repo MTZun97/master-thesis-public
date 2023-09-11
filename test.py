@@ -1,9 +1,113 @@
-from dash import Dash, Input, Output, html, dcc
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+from manufacturer import manufacturer_count
+from projects import project_count
+from project_choropleth import generate_choropleth
+from electrolyzer_cost_reduction import plot_cost_reduction  
+from global_lcoh import capacity_factor, global_lcoh
 from sensitivity import sensitivity_analysis
+from country_timeline import create_timeline_plot
+import plotly.graph_objects as go
 
-app = Dash(__name__)
+background_color = '#f2f2f2'  
+header_color = '#333333'  
+text_color = '#000000'  
+block_color = '#ffffff' 
 
-app.layout = html.Div([
+
+app = dash.Dash(__name__)
+
+
+app.layout = html.Div(style={'background-color': background_color, 'padding': '20px'}, children=[
+    html.Div([
+        html.H1('Cost Projection of Global Green Hydrogen Production Scenarios',
+                style={'font-size': '28px', 'color': header_color, 'margin-bottom': '10px'}),
+        html.P([
+            "Prepared by: ", html.B("Moe Thiri Zun"), html.Br(),
+            "Energy Economics Laboratory, Kyoto University"
+        ], style={'font-size': '16px', 'color': text_color}),
+    ], style={'text-align': 'center', 'margin-bottom': '10px'}),
+    
+    html.Div([
+        dcc.Graph(
+            id='manufacturer-count',
+            figure=manufacturer_count(),
+            style={'display': 'inline-block', 'width': '48%', 'margin-right': '2%'}
+        ),
+        dcc.Graph(
+            id='project-count',
+            figure=project_count(),
+            style={'display': 'inline-block', 'width': '48%'}
+        ),
+    ], style={'text-align': 'center', 'margin-bottom': '10px'}),
+    
+    html.Br(),
+    html.Br(),
+    
+    html.Div([
+        html.Label('Select Status:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        dcc.Dropdown(
+            id='status-dropdown',
+            options=[
+                {'label': 'All', 'value': 'all'},
+                {'label': 'Concept', 'value': 'Concept'},
+                {'label': 'FID', 'value': 'FID'},
+                {'label': 'Feasibility Study', 'value': 'Feasibility study'},
+                {'label': 'Operational', 'value': 'Operational'},
+                {'label': 'DEMO', 'value': 'DEMO'},
+                {'label': 'Under construction', 'value': 'Under construction'},
+                {'label': 'Decommissioned', 'value': 'Decommissioned'}  
+            ],
+            value='all',
+            style={'width': '100%'}
+        )
+    ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    
+    dcc.Graph(id='choropleth', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'}),
+    
+    html.Br(),
+    html.Br(),
+    
+    html.Div([
+        html.Label('Select Methodology:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        dcc.Dropdown(
+            id='method-dropdown',
+            options=[
+                {'label': 'Single Curve Fitting', 'value': 'Single'},
+                {'label': 'Double Curve Fitting', 'value': 'Double'}
+            ],
+            value='Single',
+            style={'width': '100%'}
+        )], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    dcc.Graph(id='cost-reduction-plot', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'}),
+    html.Br(),
+    html.Br(),
+    html.Div([
+    html.Span("Enter the capacity factors for each source:", style={'font-weight': 'bold', "display": 'block', 'text-align': 'center', 'margin-bottom': '10px'}),
+    html.Div([
+        html.Label("Offshore Wind:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='offshore_wind_lcoe', type='number', value=0.23, step=0.01, min=0.1, max=1),
+        html.Label("Solar:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='solar_lcoe', type='number', value=0.12, step=0.01, min=0.1, max=1),
+        html.Label("Onshore Wind:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='onshore_wind_lcoe', type='number', value=0.23, step=0.01, min=0.1, max=1),
+    ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '10px', "display": 'block', "text-align": 'center'}),
+    html.Br(),
+
+    html.Div([
+        html.Label("Electrolyzer Type:", style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        dcc.Dropdown(
+            id='electrolyzer_type',
+            options=[
+                {'label': 'Alkaline', 'value': 'alk'},
+                {'label': 'PEM', 'value': 'pem'}
+            ],
+            value='alk', style={'width': '100%'}
+        ),
+    ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    dcc.Graph(id='lcoh_graph')]),
+
     html.Div([
         html.Div([
             html.Label('Percent change for sensitivity analysis', style={'display': 'inline-block', 'width': '300px'}), 
@@ -34,22 +138,61 @@ app.layout = html.Div([
         
         html.Div([
             html.Label('Electrolyzer Efficiency (%)', style={'display': 'inline-block', 'width': '300px'}), 
-            dcc.Input(id='electrolyzer_efficiency', type='number', value=50, min=0.01, max=0.99, step=0.01, style={'width': '100px'})
+            dcc.Input(id='electrolyzer_efficiency', type='number', value=50, min=1, max=99, step=0.1, style={'width': '100px'})
         ], style={'margin-bottom': '10px'}),        
         
         html.Div([
-            html.Label('Water Rate', style={'display': 'inline-block', 'width': '300px'}), 
-            dcc.Input(id='water_rate', type='number', value=0.00237495008, style={'width': '100px'})
+            html.Label('Water Rate ($/gal)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='water_rate', type='number', value=0.002, style={'width': '100px'})
         ], style={'margin-bottom': '10px'}),
         
         html.Div([
             html.Label('Electricity Price ($/kWh)', style={'display': 'inline-block', 'width': '300px'}), 
             dcc.Input(id='elect_price', type='number', value=0.036, style={'width': '100px'})
         ], style={'margin-bottom': '10px'}),
-    ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'border': '1px solid #ccc', 'padding': '10px', 'margin': '10px'}),
+    ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': block_color}),
     
-    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top', 'border': '1px solid #ccc', 'padding': '10px', 'margin': '10px'})
+    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color }),
+
+    html.Div([
+    # Input box for cost_target
+    dcc.Input(id='cost_target_input', value=2, type='number'),
+    
+    # Graph to display the output
+    dcc.Graph(id='output_graph', figure=create_timeline_plot(2))])
+
+
 ])
+
+@app.callback(
+    Output('choropleth', 'figure'),
+    Input('status-dropdown', 'value')
+)
+def update_choropleth(status):
+    choropleth_fig = generate_choropleth(status)
+    return choropleth_fig
+
+@app.callback(
+    Output('cost-reduction-plot', 'figure'),
+    Input('method-dropdown', 'value')
+)
+def update_cost_reduction_plot(selected_method):
+    return plot_cost_reduction(selected_method)
+
+@app.callback(
+    Output('lcoh_graph', 'figure'),
+    [
+        Input('offshore_wind_lcoe', 'value'),
+        Input('solar_lcoe', 'value'),
+        Input('onshore_wind_lcoe', 'value'),
+        Input('electrolyzer_type', 'value')
+    ]
+)
+def update_graph(offshore_wind_lcoe, solar_lcoe, onshore_wind_lcoe, electrolyzer_type):
+    global cap_factor_sources
+    cap_factor_sources = capacity_factor(offshore_wind_lcoe, solar_lcoe, onshore_wind_lcoe)
+    return global_lcoh(electrolyzer_type)
+
 
 @app.callback(
     Output('tornado_chart', 'figure'),
@@ -75,6 +218,24 @@ def update_tornado_chart(percent_change, startup_year, cap_factor, current_densi
         water_rate=water_rate,
         elect_price=elect_price
     )
+
+
+# Define the callback to update the graph
+@app.callback(
+    Output('output_graph', 'figure'),
+    [Input('cost_target_input', 'value')]
+)
+def update_output(cost_target):
+    # Call your function to generate the plot
+    if cost_target is not None:
+        return create_timeline_plot(cost_target)
+    else:
+        return go.Figure()  # This will be an empty figure
+
+# Run the app
+if __name__ == '__main__':
+    app.run_server(debug=True)
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
