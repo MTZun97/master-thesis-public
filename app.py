@@ -6,7 +6,7 @@ from projects import project_count
 from project_choropleth import generate_choropleth
 from electrolyzer_cost_reduction import plot_cost_reduction  # Corrected missing import statement
 from global_lcoh import capacity_factor, global_lcoh
-
+from sensitivity import sensitivity_analysis
 
 # Define custom color codes
 background_color = '#f2f2f2'  # Light gray background
@@ -85,11 +85,11 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
     html.Div([
     html.Span("Enter the capacity factors for each source:", style={'font-weight': 'bold', "display": 'block', 'text-align': 'center', 'margin-bottom': '10px'}),
     html.Div([
-        html.Label("Offshore Wind LCOE:", style={'margin-right': '10px','margin-left': '10px'}),
+        html.Label("Offshore Wind:", style={'margin-right': '10px','margin-left': '10px'}),
         dcc.Input(id='offshore_wind_lcoe', type='number', value=0.23, step=0.01, min=0.1, max=1),
-        html.Label("Solar LCOE:", style={'margin-right': '10px','margin-left': '10px'}),
-        dcc.Input(id='solar_lcoe', type='number', value=0.12, step=0.1, min=0.01, max=1),
-        html.Label("Onshore Wind LCOE:", style={'margin-right': '10px','margin-left': '10px'}),
+        html.Label("Solar:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='solar_lcoe', type='number', value=0.12, step=0.01, min=0.1, max=1),
+        html.Label("Onshore Wind:", style={'margin-right': '10px','margin-left': '10px'}),
         dcc.Input(id='onshore_wind_lcoe', type='number', value=0.23, step=0.01, min=0.1, max=1),
     ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '10px', "display": 'block', "text-align": 'center'}),
     html.Br(),
@@ -105,7 +105,54 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
             value='alk', style={'width': '100%'}
         ),
     ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
-    dcc.Graph(id='lcoh_graph')])
+    dcc.Graph(id='lcoh_graph')]),
+
+    html.Div([
+        html.Div([
+            html.Label('Percent change for sensitivity analysis', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='percent_change', type='number', value=0.3, min=0.01, max=0.99, step=0.01, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        html.Br(),
+        html.Span("Define values for base scneario:", style={'font-weight': 'bold','margin-bottom': '300px'}),
+        html.Br(),
+        html.Div([
+            html.Label('Startup year', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='startup_year', type='number', value=2020, min=1994, max= 2050, step=1, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Capacity factor', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='cap_factor', type='number', value=0.5, min=0.01, max=0.99, step= 0.01, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Current Density (A/cm²)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='current_density', type='number', value=1.5,  min=0.2, max=2, step=0.01, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Electrolyzer Cost ($/kW)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='electrolzyer_cost', type='number', value=1000, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Electrolyzer Efficiency (%)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='electrolyzer_efficiency', type='number', value=50, min=1, max=99, step=0.1, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),        
+        
+        html.Div([
+            html.Label('Water Rate ($/gal)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='water_rate', type='number', value=0.002, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Electricity Price ($/kWh)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='elect_price', type='number', value=0.036, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+    ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '10px', 'margin': '10px', 'background-color': block_color}),
+    
+    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '10px', 'margin': '10px', 'background-color': block_color })
+
 
 ])
 
@@ -138,6 +185,31 @@ def update_graph(offshore_wind_lcoe, solar_lcoe, onshore_wind_lcoe, electrolyzer
     cap_factor_sources = capacity_factor(offshore_wind_lcoe, solar_lcoe, onshore_wind_lcoe)
     return global_lcoh(electrolyzer_type)
 
+
+@app.callback(
+    Output('tornado_chart', 'figure'),
+    [
+        Input('percent_change', 'value'),
+        Input('startup_year', 'value'),
+        Input('cap_factor', 'value'),
+        Input('current_density', 'value'),
+        Input('electrolzyer_cost', 'value'),
+        Input('electrolyzer_efficiency', 'value'),
+        Input('water_rate', 'value'),
+        Input('elect_price', 'value')
+    ]
+)
+def update_tornado_chart(percent_change, startup_year, cap_factor, current_density, electrolzyer_cost, electrolyzer_efficiency, water_rate, elect_price):
+    return sensitivity_analysis(
+        percent_change=percent_change,
+        startup_year=startup_year,
+        cap_factor=cap_factor,
+        current_density=current_density,
+        electrolzyer_cost=electrolzyer_cost,
+        electrolyzer_efficiency=electrolyzer_efficiency,
+        water_rate=water_rate,
+        elect_price=elect_price
+    )
 # Run the app if this script is the main module
 if __name__ == '__main__':
     app.run_server(debug=True)
