@@ -19,7 +19,7 @@ settings = {
              'pem': {'params': {"current_density": 2, "stack_percent": 0.6, "mech_percent": 0.3, "elect_percent": 0.2}, 'cost': "pem_doublef", 'eff': "eff_singlef_alk"}}
 }
 
-countries = ["Australia", "Germany", "China", "Netherlands", "Japan", "Canada", "United States", "United Kingdom", "Sweden", "Spain", "France", "Denmark", "Italy"]
+countries = ["Australia", "Germany", "China", "Netherlands", "Japan", "Canada", "United States", "United Kingdom", "Sweden", "Spain", "France", "Denmark"]
 
 def calculate_data(setting, lcoe_function):
     df_result = {}

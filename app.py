@@ -7,7 +7,8 @@ from project_choropleth import generate_choropleth
 from electrolyzer_cost_reduction import plot_cost_reduction  
 from global_lcoh import capacity_factor, global_lcoh
 from sensitivity import sensitivity_analysis
-
+from country_timeline import create_timeline_plot
+import plotly.graph_objects as go
 
 background_color = '#f2f2f2'  
 header_color = '#333333'  
@@ -151,7 +152,52 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
         ], style={'margin-bottom': '10px'}),
     ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': block_color}),
     
-    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color })
+    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color }),
+
+    html.Div([
+    html.Div([
+        html.Span(
+            "Enter the target LCOH:", 
+            style={
+                'font-weight': 'bold', 
+                "display": 'inline-block', 
+                'margin-right': '10px',  # Added some margin to separate the text and input box
+                'vertical-align': 'middle'  # Align the text vertically with the input box
+            }
+        ),
+        dcc.Input(
+            id='cost_target_input', 
+            value=2, 
+            type='number', 
+            min=0, 
+            max=5, 
+            step=0.5, 
+            style={
+                'width': '100px', 
+                'display': 'inline-block',  # Changed display to inline-block
+                'vertical-align': 'middle'  # Align the input box vertically with the text
+            }
+        )], 
+        style={
+            "width": "100%", 
+            'text-align': 'center', 
+        }
+    ),
+    
+    # Graph to display the output
+    dcc.Graph(
+        id='output_graph', 
+        figure=create_timeline_plot(2), 
+        style={
+            'width': '100%', 
+            'vertical-align': 'top',  
+            'padding': '5px', 
+            'margin': '10px', 
+            'background-color': block_color
+        }
+    )
+])
+
 
 
 ])
@@ -210,6 +256,24 @@ def update_tornado_chart(percent_change, startup_year, cap_factor, current_densi
         water_rate=water_rate,
         elect_price=elect_price
     )
+
+
+# Define the callback to update the graph
+@app.callback(
+    Output('output_graph', 'figure'),
+    [Input('cost_target_input', 'value')]
+)
+def update_output(cost_target):
+    # Call your function to generate the plot
+    if cost_target is not None:
+        return create_timeline_plot(cost_target)
+    else:
+        return go.Figure()  # This will be an empty figure
+
+# Run the app
+if __name__ == '__main__':
+    app.run_server(debug=True)
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

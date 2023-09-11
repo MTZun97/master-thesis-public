@@ -10,7 +10,7 @@ from dash.dependencies import Input, Output
 import dash
 
 
-countries = ["Australia", "Germany", "China", "Japan", "Canada", "United States", "United Kingdom", "Sweden", "Spain", "France", "Denmark", "Italy"]
+countries = ["Australia", "Germany", "China", "Japan", "Canada", "United States", "United Kingdom", "Sweden", "Spain", "France", "Denmark"]
 
 df_low = {}
 df_high = {}
@@ -20,12 +20,18 @@ with pd.ExcelFile('data/lcoh_data.xlsx') as reader:
         df_high[country] = pd.read_excel(reader, sheet_name=f'df_high_{country}', index_col='Index')
 
 def get_earliest_year(df_data, target):
-    results_df = pd.DataFrame(columns=['Country', 'Source', 'Year'])
+    results_dfs = []  # This will store individual dataframes which will be concatenated later
+
     for country, df_country in df_data.items():
         earliest_years = [(source, df_country[source].loc[df_country[source] < target].index[0]) for source in df_country.columns if df_country[source].loc[df_country[source] < target].index.any()]
         earliest_years.sort(key=lambda x: x[1])
-        results_df = results_df.append({'Country': country, 'Source': earliest_years[0][0] if earliest_years else None, 'Year': earliest_years[0][1] if earliest_years else None}, ignore_index=True)
+        
+        # Creating a DataFrame for each iteration and storing it in the list
+        results_dfs.append(pd.DataFrame([{'Country': country, 'Source': earliest_years[0][0] if earliest_years else None, 'Year': earliest_years[0][1] if earliest_years else None}]))
+
+    results_df = pd.concat(results_dfs, ignore_index=True)  # Concatenating all the dataframes in the list
     return results_df
+
 
 
 def create_timeline_plot(cost_target):

@@ -155,11 +155,49 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
     dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color }),
 
     html.Div([
-    # Input box for cost_target
-    dcc.Input(id='cost_target_input', value=2, type='number'),
+    html.Div([
+        html.Span(
+            "Enter the target LCOH:", 
+            style={
+                'font-weight': 'bold', 
+                "display": 'inline-block', 
+                'margin-right': '10px',  # Added some margin to separate the text and input box
+                'vertical-align': 'middle'  # Align the text vertically with the input box
+            }
+        ),
+        dcc.Input(
+            id='cost_target_input', 
+            value=2, 
+            type='number', 
+            min=0.1, 
+            max=10, 
+            step=0.1, 
+            style={
+                'width': '100px', 
+                'display': 'inline-block',  # Changed display to inline-block
+                'vertical-align': 'middle'  # Align the input box vertically with the text
+            }
+        )], 
+        style={
+            "width": "100%", 
+            'text-align': 'center', 
+        }
+    ),
     
     # Graph to display the output
-    dcc.Graph(id='output_graph', figure=create_timeline_plot(2))])
+    dcc.Graph(
+        id='output_graph', 
+        figure=create_timeline_plot(2), 
+        style={
+            'width': '100%', 
+            'vertical-align': 'top',  
+            'padding': '5px', 
+            'margin': '10px', 
+            'background-color': block_color
+        }
+    )
+])
+
 
 
 ])
