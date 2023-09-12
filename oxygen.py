@@ -210,8 +210,8 @@ def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
     lcoh_O2_revenue = (-(lcoh_oxygen_revenue)
             * (1 - total_tax_rate))/lcoh_H2_sales * (1+ var.inflation_rate)**1/inflation_factor   
     
-    lcoh = round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost, 3)
-    lcoh_O2 = round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost+
+    lcoh = np.round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost, 3)
+    lcoh_O2 = np.round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost+
                     lcoh_capital_costs_O2  + lcoh_O2_revenue, 3)
 
 
@@ -239,15 +239,35 @@ def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency,
 
 
 
-    dict = {"O2_price": O2_value, "LCOH - O2 Revenue": lcoh_O2_list, "LCOH": lcoh_list, "LCOH - SMR": lcoh_smr}
+    data_dict = {"O2_price": O2_value, "LCOH - O2 Revenue": lcoh_O2_list, "LCOH": lcoh_list, "LCOH - SMR": lcoh_smr}
 
-    df = pd.DataFrame.from_dict(dict).set_index("O2_price")
+    df = pd.DataFrame.from_dict(data_dict).set_index("O2_price")
     
     fig = px.line(df, x=df.index, y=df.columns)
 
     # Adding labels and title
     fig.update_xaxes(title_text='O2 Price ($/kgO2)')
     fig.update_yaxes(title_text='LCOH ($/kgH2)')
+
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            traceorder="normal",
+            font=dict(
+                family="sans-serif",
+                size=12,
+                color="black"
+            ),
+            bordercolor="Black",
+            borderwidth=2,
+            itemsizing='constant'
+        ),
+        legend_title_text=''
+    )
 
     return fig
 
@@ -260,3 +280,9 @@ def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency,
 #               current_density=2, stack_percent=0.6, ASU_cost = 200)
 
 # print(lcoh, lcoh_O2)
+
+# lcoh, _ = cash_flow(cap_factor = 0.6, electrolyzer_cost= 1000, 
+#                     electricity_price = 0.036, O2 = 0, electrolyzer_efficiency = 70,
+#                         mech_percent=0.3, elect_percent=0.2, water_rate = 0.00237495008, current_density=2, 
+#                         stack_percent=0.6, ASU_cost = 200, startup_year = 2021)
+# print(lcoh)

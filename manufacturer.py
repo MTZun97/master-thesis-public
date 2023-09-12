@@ -17,18 +17,24 @@ def manufacturer_count():
                  category_orders={
                      "headquarter": total_counts['headquarter'].tolist()})
 
-    fig.update_layout(
-        xaxis_title_font=dict(size=16),
-        yaxis_title_font=dict(size=16),
-        xaxis=dict(tickangle=90, tickfont=dict(size=12)),
-        yaxis=dict(tickfont=dict(size=12)),
-        legend=dict(xanchor="right", x=0.99, yanchor="top", y=0.99),
-        showlegend=True,
-        plot_bgcolor="#E6E6FA", 
-        title_text="<b>Electrolyzer Manufacturers by Country</b>",
-        title_x=0.5, 
-        title_font=dict(size=18, family='Arial', color='black'),
-        margin=dict(b=50) 
-    )
 
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            traceorder="normal",
+            font=dict(
+                family="sans-serif",
+                size=12,
+                color="black"
+            ),
+            bordercolor="Black",
+            borderwidth=2,
+            itemsizing='constant'
+        ),
+        legend_title_text=''
+    )
     return fig

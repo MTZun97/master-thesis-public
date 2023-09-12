@@ -35,7 +35,7 @@ def calculate_data(setting_type):
             lcoh_row = {"Index": index}
             for source in valid_sources:
                 cap_factor = cap_factor_sources.get(source, 0.8)
-                lcoh, _, _, _ = cash_flow(startup_year=index, cap_factor=cap_factor, electrolyzer_cost=electrolyzer_cost, electrolyzer_efficiency=electrolyzer_efficiency, elect_df=lcoe(
+                lcoh, _, _, _, _ = cash_flow(startup_year=index, cap_factor=cap_factor, electrolyzer_cost=electrolyzer_cost, electrolyzer_efficiency=electrolyzer_efficiency, elect_df=lcoe(
                     source, "World") if setting_type == 'low' else lcoe_constant(source, "World"), **setting['params'])
                 lcoh_row[source] = lcoh
             data.append(lcoh_row)

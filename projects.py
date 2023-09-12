@@ -22,21 +22,28 @@ def project_count():
     total_count = total_count.sort_values("total_count", ascending=False)
 
     fig = px.bar(grouped_data, x="country_converted", y="count", color="status", category_orders={"country_converted": total_count["country_converted"].tolist()},
-                 labels={"country_converted": "Countries", "count": "Count"},
-                 title="<b>Hydrogen Projects Count per Country<b>")
+                 labels={"country_converted": "Countries", "count": "Count"})
 
     fig.update_layout(
-        xaxis_title_font=dict(size=16),
-        yaxis_title_font=dict(size=16),
-        xaxis=dict(tickangle=90, tickfont=dict(size=12)),
-        yaxis=dict(tickfont=dict(size=12)),
-        legend=dict(xanchor="right", x=0.99, yanchor="top", y=0.99),
-        showlegend=True,
-        plot_bgcolor="#E6E6FA",
-        title_text="<b>Hydrogen Projects Count per Country</b>",
-        title_x=0.5,  
-        title_font=dict(size=18, family='Arial', color='black'),
-        margin=dict(b=50)  
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            traceorder="normal",
+            font=dict(
+                family="sans-serif",
+                size=12,
+                color="black"
+            ),
+            bordercolor="Black",
+            borderwidth=2,
+            itemsizing='constant'
+        ),
+        legend_title_text='',
+        width=800,  # Adjust as needed
+        height=450  # Adjust as needed
     )
 
 

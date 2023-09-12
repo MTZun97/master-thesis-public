@@ -271,4 +271,4 @@ def cash_flow(startup_year, cap_factor, current_density, stack_percent, electrol
        
     lcoh = round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost, 3)
 
-    return lcoh, lcoh_capital_costs+lcoh_depreciation , lcoh_fixed_op_cost, lcoh_var_op_cost
+    return lcoh, lcoh_capital_costs,lcoh_depreciation , lcoh_fixed_op_cost, lcoh_var_op_cost

@@ -97,6 +97,26 @@ def create_timeline_plot(cost_target):
         autosize=True,
         height=700,
     )
+    
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            traceorder="normal",
+            font=dict(
+                family="sans-serif",
+                size=12,
+                color="black"
+            ),
+            bordercolor="Black",
+            borderwidth=2,
+            itemsizing='constant'
+        ),
+        legend_title_text=''
+    )
 
     return fig
 
