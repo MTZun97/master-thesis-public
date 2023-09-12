@@ -1,103 +1,335 @@
-import pandas as pd
-from lcoh import valid_sources, lcoe, lcoe_constant
-from lcoh import cash_flow
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-import plotly.graph_objects as go
+import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
-import dash
+from manufacturer import manufacturer_count
+from projects import project_count
+from project_choropleth import generate_choropleth
+from electrolyzer_cost_reduction import plot_cost_reduction  
+from global_lcoh import capacity_factor, global_lcoh
+from sensitivity import sensitivity_analysis
+from country_timeline import create_timeline_plot
+import plotly.graph_objects as go
+from oxygen import create_O2revenue_plot
+
+background_color = '#f2f2f2'  
+header_color = '#333333'  
+text_color = '#000000'  
+block_color = '#ffffff' 
 
 
-countries = ["Australia", "Germany", "China", "Japan", "Canada", "United States",
-             "United Kingdom", "Sweden", "Spain", "France", "Denmark", "Italy"]
-
-df_low = {}
-df_high = {}
-with pd.ExcelFile('data/lcoh_data.xlsx') as reader:
-    for country in countries:
-        df_low[country] = pd.read_excel(
-            reader, sheet_name=f'df_low_{country}', index_col='Index')
-        df_high[country] = pd.read_excel(
-            reader, sheet_name=f'df_high_{country}', index_col='Index')
+app = dash.Dash(__name__)
 
 
-def get_earliest_year(df_data, target):
-    results_df = pd.DataFrame(columns=['Country', 'Source', 'Year'])
-    for country, df_country in df_data.items():
-        earliest_years = [(source, df_country[source].loc[df_country[source] < target].index[0])
-                          for source in df_country.columns if df_country[source].loc[df_country[source] < target].index.any()]
-        earliest_years.sort(key=lambda x: x[1])
-        results_df = results_df.append(
-            {'Country': country, 'Source': earliest_years[0][0] if earliest_years else None, 'Year': earliest_years[0][1] if earliest_years else None}, ignore_index=True)
-    return results_df
+app.layout = html.Div(style={'background-color': background_color, 'padding': '20px'}, children=[
+    html.Div([
+        html.H1('Cost Projection of Global Green Hydrogen Production Scenarios',
+                style={'font-size': '28px', 'color': header_color, 'margin-bottom': '10px'}),
+        html.P([
+            "Prepared by: ", html.B("Moe Thiri Zun"), html.Br(),
+            "Energy Economics Laboratory, Kyoto University"
+        ], style={'font-size': '16px', 'color': text_color}),
+    ], style={'text-align': 'center', 'margin-bottom': '10px'}),
+    
+    html.Div([
+        dcc.Graph(
+            id='manufacturer-count',
+            figure=manufacturer_count(),
+            style={'display': 'inline-block', 'width': '48%', 'margin-right': '2%'}
+        ),
+        dcc.Graph(
+            id='project-count',
+            figure=project_count(),
+            style={'display': 'inline-block', 'width': '48%'}
+        ),
+    ], style={'text-align': 'center', 'margin-bottom': '10px'}),
+    
+    html.Br(),
+    html.Br(),
+    
+    html.Div([
+        html.Label('Select Status:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        dcc.Dropdown(
+            id='status-dropdown',
+            options=[
+                {'label': 'All', 'value': 'all'},
+                {'label': 'Concept', 'value': 'Concept'},
+                {'label': 'FID', 'value': 'FID'},
+                {'label': 'Feasibility Study', 'value': 'Feasibility study'},
+                {'label': 'Operational', 'value': 'Operational'},
+                {'label': 'DEMO', 'value': 'DEMO'},
+                {'label': 'Under construction', 'value': 'Under construction'},
+                {'label': 'Decommissioned', 'value': 'Decommissioned'}  
+            ],
+            value='all',
+            style={'width': '100%'}
+        )
+    ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    
+    dcc.Graph(id='choropleth', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'}),
+    
+    html.Br(),
+    html.Br(),
+    
+    html.Div([
+        html.Label('Select Methodology:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        dcc.Dropdown(
+            id='method-dropdown',
+            options=[
+                {'label': 'Single Curve Fitting', 'value': 'Single'},
+                {'label': 'Double Curve Fitting', 'value': 'Double'}
+            ],
+            value='Single',
+            style={'width': '100%'}
+        )], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    dcc.Graph(id='cost-reduction-plot', style={'width': '100%', 'height': '80vh', 'margin': '0 auto'}),
+    html.Br(),
+    html.Br(),
+    html.Div([
+    html.Span("Enter the capacity factors for each source:", style={'font-weight': 'bold', "display": 'block', 'text-align': 'center', 'margin-bottom': '10px'}),
+    html.Div([
+        html.Label("Offshore Wind:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='offshore_wind_lcoe', type='number', value=0.23, step=0.01, min=0.1, max=1),
+        html.Label("Solar:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='solar_lcoe', type='number', value=0.12, step=0.01, min=0.1, max=1),
+        html.Label("Onshore Wind:", style={'margin-right': '10px','margin-left': '10px'}),
+        dcc.Input(id='onshore_wind_lcoe', type='number', value=0.23, step=0.01, min=0.1, max=1),
+    ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '10px', "display": 'block', "text-align": 'center'}),
+    html.Br(),
+
+    html.Div([
+        html.Label("Electrolyzer Type:", style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        dcc.Dropdown(
+            id='electrolyzer_type',
+            options=[
+                {'label': 'Alkaline', 'value': 'alk'},
+                {'label': 'PEM', 'value': 'pem'}
+            ],
+            value='alk', style={'width': '100%'}
+        ),
+    ], style={'width': '50%', 'margin': '0 auto', 'margin-bottom': '20px'}),
+    dcc.Graph(id='lcoh_graph')]),
+
+    html.Div([
+        html.Div([
+            html.Label('Percent change for sensitivity analysis', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='percent_change', type='number', value=0.3, min=0.01, max=0.99, step=0.01, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        html.Br(),
+        html.Span("Define values for base scneario:", style={'font-weight': 'bold','margin-bottom': '300px'}),
+        html.Br(),
+        html.Div([
+            html.Label('Startup year', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='startup_year', type='number', value=2020, min=1994, max= 2050, step=1, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Capacity factor', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='cap_factor', type='number', value=0.5, min=0.01, max=0.99, step= 0.01, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Current Density (A/cm²)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='current_density', type='number', value=1.5,  min=0.2, max=2, step=0.01, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Electrolyzer Cost ($/kW)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='electrolzyer_cost', type='number', value=1000, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Electrolyzer Efficiency (%)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='electrolyzer_efficiency', type='number', value=50, min=1, max=99, step=0.1, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),        
+        
+        html.Div([
+            html.Label('Water Rate ($/gal)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='water_rate', type='number', value=0.002, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+        
+        html.Div([
+            html.Label('Electricity Price ($/kWh)', style={'display': 'inline-block', 'width': '300px'}), 
+            dcc.Input(id='elect_price', type='number', value=0.036, style={'width': '100px'})
+        ], style={'margin-bottom': '10px'}),
+    ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': block_color}),
+    
+    dcc.Graph(id='tornado_chart', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color }),
+
+    html.Div([
+    html.Div([
+        html.Span(
+            "Enter the target LCOH:", 
+            style={
+                'font-weight': 'bold', 
+                "display": 'inline-block', 
+                'margin-right': '10px',  # Added some margin to separate the text and input box
+                'vertical-align': 'middle'  # Align the text vertically with the input box
+            }
+        ),
+        dcc.Input(
+            id='cost_target_input', 
+            value=2, 
+            type='number', 
+            min=0, 
+            max=5, 
+            step=0.5, 
+            style={
+                'width': '100px', 
+                'display': 'inline-block',  # Changed display to inline-block
+                'vertical-align': 'middle'  # Align the input box vertically with the text
+            }
+        )], 
+        style={
+            "width": "100%", 
+            'text-align': 'center', 
+        }
+    ),
+    
+    # Graph to display the output
+    dcc.Graph(
+        id='output_graph', 
+        figure=create_timeline_plot(2), 
+        style={
+            'width': '100%', 
+            'vertical-align': 'top',  
+            'padding': '5px', 
+            'margin': '10px', 
+            'background-color': block_color
+        }
+    )
+]),
+    html.Div([
+        html.Div([          
+            html.Div([
+                html.Label('ASU Cost', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.Input(id='ASU_cost', type='number', value=200, min=0, step=5, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Electricity Price', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.Input(id='electricity_price', type='number', value=0.036, min=0.01, step=0.001, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Electrolyzer Efficiency', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.Input(id='electrolyzer_efficiency', type='number', value=70, min=0, max=100, step=1, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Electrolyzer Cost', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.Input(id='electrolyzer_cost', type='number', value=1000, min=0, step=5, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Capacity Factor', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.Input(id='capacity_factor', type='number', value=0.6, min=0, max=1, step=0.01, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Natural Gas Price', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.Input(id='NG_price', type='number', value=10, min=0, step=1, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+
+            html.Div([
+                html.Label('O2 Price Range', style={'display': 'inline-block', 'width': '300px'}),
+                dcc.RangeSlider(
+                    id='O2_price_slider',
+                    min=0,
+                    max=7,
+                    value=[0, 5],
+                    step=0.5,
+                ),
+            ], style={'margin-bottom': '10px'}),
+        ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': '#f9f9f9'}),
+        
+        dcc.Graph(id='line_plot', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': '#f9f9f9' }),
+    ])
+])
+
+@app.callback(
+    Output('choropleth', 'figure'),
+    Input('status-dropdown', 'value')
+)
+def update_choropleth(status):
+    choropleth_fig = generate_choropleth(status)
+    return choropleth_fig
+
+@app.callback(
+    Output('cost-reduction-plot', 'figure'),
+    Input('method-dropdown', 'value')
+)
+def update_cost_reduction_plot(selected_method):
+    return plot_cost_reduction(selected_method)
+
+@app.callback(
+    Output('lcoh_graph', 'figure'),
+    [
+        Input('offshore_wind_lcoe', 'value'),
+        Input('solar_lcoe', 'value'),
+        Input('onshore_wind_lcoe', 'value'),
+        Input('electrolyzer_type', 'value')
+    ]
+)
+def update_graph(offshore_wind_lcoe, solar_lcoe, onshore_wind_lcoe, electrolyzer_type):
+    global cap_factor_sources
+    cap_factor_sources = capacity_factor(offshore_wind_lcoe, solar_lcoe, onshore_wind_lcoe)
+    return global_lcoh(electrolyzer_type)
 
 
-def create_timeline_plot(cost_target):
-    # Convert tuple colors to hexadecimal
-
-    results_df_low = get_earliest_year(df_low, target=cost_target)
-    results_df_high = get_earliest_year(df_high, target=cost_target)
-    # Convert tuple colors to hexadecimal
-    colors = ['#{:02x}{:02x}{:02x}'.format(int(r*255), int(g*255), int(b*255))
-              for r, g, b in [(0.7686274509803922, 0.3058823529411765, 0.3215686274509804),
-                              (0.2980392156862745, 0.4470588235294118, 0.6901960784313725)]]
-
-    fig = go.Figure()
-
-    sources_symbols = {'solar_lcoe': 'circle', 'onshore_wind_lcoe': 'square'}
-
-    # Add a trace for each country in the low and high data
-    for df, trace_name, color in zip([results_df_low, results_df_high], ['Optimistic', 'Pessimistic'], colors):
-        for idx, row in df.iterrows():
-            if pd.isna(row['Year']):
-                continue
-
-            fig.add_trace(go.Scatter(
-                x=[row['Year'], 2052],
-                y=[row['Country'], row['Country']],
-                mode='lines+markers',
-                name=trace_name,
-                line=dict(color=color, width=10),
-                marker=dict(color=color, size=20, symbol=sources_symbols.get(
-                    row['Source'], 'circle')),
-                legendgroup=trace_name,
-                hovertemplate='<i>%{y}</i><br>Year: %{x}',
-                showlegend=False  # Do not show the legend for these traces
-            ))
-
-    # Add dummy traces for legend
-    for trace_name, color in zip(['Optimistic', 'Pessimistic'], colors):
-        fig.add_trace(go.Scatter(
-            x=[None],
-            y=[None],
-            mode='lines',
-            name=trace_name,
-            line=dict(color=color, width=2),
-            showlegend=True
-        ))
-
-    # Add dummy traces for source types
-    for source, symbol in sources_symbols.items():
-        fig.add_trace(go.Scatter(
-            x=[None],
-            y=[None],
-            mode='markers',
-            name=source,
-            marker=dict(symbol=symbol, size=10,
-                        color=colors[0] if source == 'solar_lcoe' else colors[1]),
-            showlegend=True
-        ))
-
-    # Update layout
-    fig.update_layout(
-        title='<b>Timeline Plot of Countries to Achieve target LCOH<b>',
-        title_font=dict(size=18, family='Arial', color='black'), title_x=0.5,
-        xaxis=dict(title='Year', range=[2000, 2050], tickfont=dict(size=12)),
-        yaxis=dict(title='Country', tickfont=dict(size=12)),
-        autosize=True,
-        height=700,
+@app.callback(
+    Output('tornado_chart', 'figure'),
+    [
+        Input('percent_change', 'value'),
+        Input('startup_year', 'value'),
+        Input('cap_factor', 'value'),
+        Input('current_density', 'value'),
+        Input('electrolzyer_cost', 'value'),
+        Input('electrolyzer_efficiency', 'value'),
+        Input('water_rate', 'value'),
+        Input('elect_price', 'value')
+    ]
+)
+def update_tornado_chart(percent_change, startup_year, cap_factor, current_density, electrolzyer_cost, electrolyzer_efficiency, water_rate, elect_price):
+    return sensitivity_analysis(
+        percent_change=percent_change,
+        startup_year=startup_year,
+        cap_factor=cap_factor,
+        current_density=current_density,
+        electrolzyer_cost=electrolzyer_cost,
+        electrolyzer_efficiency=electrolyzer_efficiency,
+        water_rate=water_rate,
+        elect_price=elect_price
     )
 
-    return fig
+
+# Define the callback to update the graph
+@app.callback(
+    Output('output_graph', 'figure'),
+    [Input('cost_target_input', 'value')]
+)
+def update_output(cost_target):
+    # Call your function to generate the plot
+    if cost_target is not None:
+        return create_timeline_plot(cost_target)
+    else:
+        return go.Figure()  # This will be an empty figure
+
+@app.callback(
+    Output('line_plot', 'figure'),
+    [
+        Input('ASU_cost', 'value'),
+        Input('electricity_price', 'value'),
+        Input('electrolyzer_efficiency', 'value'),
+        Input('electrolyzer_cost', 'value'),
+        Input('capacity_factor', 'value'),
+        Input('NG_price', 'value'),
+        Input('O2_price_slider', 'value')
+    ]
+)
+def update_plot(ASU_cost, electricity_price, electrolyzer_efficiency, electrolyzer_cost, capacity_factor, NG_price, O2_price):
+    return create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency, electrolyzer_cost, capacity_factor, NG_price, O2_price)
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
