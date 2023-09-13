@@ -18,6 +18,7 @@ block_color = '#ffffff'
 
 
 app = dash.Dash(__name__)
+server = app.server
 
 
 app.layout = html.Div(style={'background-color': background_color, 'padding': '20px'}, children=[
