@@ -2,6 +2,7 @@ import variable as var
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
+import os
 
 # Inflation Calculation
 CPI_dict = {"year": range(1990, 2022, 1), "value": [8.1, 9, 7.6, 7.1, 10.2, 9.1, 6.5, 5.6, 5.1, 3, 3.4, 3.8, 2.9,
@@ -38,7 +39,8 @@ def lcoe(source, location):
     if source not in valid_sources:
         raise ValueError(f"Invalid source. Available sources: {valid_sources}")
 
-    lcoe_df = pd.read_csv("src\\data\\lcoe.csv")
+    csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "lcoe.csv"))
+    lcoe_df = pd.read_csv(csv_file_path)
     lcoe_df = lcoe_df[lcoe_df["entity"] == location].sort_values("year")
 
     # Create a DataFrame with a complete range of years
@@ -72,8 +74,10 @@ def lcoe(source, location):
 def lcoe_constant(source, location):
     if source not in valid_sources:
         raise ValueError(f"Invalid source. Available sources: {valid_sources}")
+    
+    csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "lcoe.csv"))
+    lcoe_df = pd.read_csv(csv_file_path)
 
-    lcoe_df = pd.read_csv("src\\data\\lcoe.csv")
     lcoe_df = lcoe_df[lcoe_df["entity"] == location].sort_values("year")
 
     # Create a DataFrame with a complete range of years

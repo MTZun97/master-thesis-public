@@ -1,10 +1,10 @@
 import pandas as pd
 import plotly.express as px
 import pycountry
-
+import os
 
 def manufacturer_count():
-    filepath = 'src\\data\\Reference.xlsx'
+    filepath = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "cost_reduction.csv"))
     manufacturer_data = pd.read_excel(
         filepath, header=0, sheet_name="manufacturer")
     manufacturer_data['headquarter'] = manufacturer_data['headquarter']

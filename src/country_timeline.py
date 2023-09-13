@@ -8,13 +8,13 @@ import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash
-
+import os
 
 countries = ["Australia", "Germany", "China", "Japan", "Canada", "United States", "United Kingdom", "Sweden", "Spain", "France", "Denmark"]
-
+csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "lcoh_data.xlsx"))
 df_low = {}
 df_high = {}
-with pd.ExcelFile('src\\data\\lcoh_data.xlsx') as reader:
+with pd.ExcelFile(csv_file_path) as reader:
     for country in countries:
         df_low[country] = pd.read_excel(reader, sheet_name=f'df_low_{country}', index_col='Index')
         df_high[country] = pd.read_excel(reader, sheet_name=f'df_high_{country}', index_col='Index')
