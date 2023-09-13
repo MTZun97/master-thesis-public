@@ -11,6 +11,7 @@ from sensitivity import sensitivity_analysis
 from country_timeline import create_timeline_plot
 import plotly.graph_objects as go
 from oxygen import create_O2revenue_plot
+from carbontax import create_carbontax_plot
 
 background_color = '#f2f2f2'  
 header_color = '#333333'  
@@ -246,6 +247,60 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
         ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': block_color}),
         
         dcc.Graph(id='line_plot', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color }),
+    ]),
+
+    html.Div([
+        html.Div([
+            html.Span("Carbon Tax Plot Parameters:", style={'font-weight': 'bold'}),
+            html.Br(),
+            
+            html.Div([
+                html.Label('NG Price:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='NG_price_CO2', type='number', value=30, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('CCUS Percent:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='CCUS_percent', type='number', value=30, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Capture Rate:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='capture_rate', type='number', value=90, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Carbon Tax:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='carbon_tax', type='number', value=350, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+            
+            html.Div([
+                html.Label('Electricity Price CO2 Start:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='electricity_price_CO2_start', type='number', value=0.01, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('Electricity Price CO2 End:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='electricity_price_CO2_end', type='number', value=0.11, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('Electrolyzer Efficiency CO2:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='electrolyzer_efficiency_CO2', type='number', value=70, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('Electrolyzer Cost CO2:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='electrolyzer_cost_CO2', type='number', value=1000, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('Capacity Factor CO2:', style={'display': 'inline-block', 'width': '300px'}), 
+                dcc.Input(id='capacity_factor_CO2', type='number', value=0.6, style={'width': '100px'})
+            ], style={'margin-bottom': '10px'}),
+        ], style={'display': 'inline-block', 'width': '30%', 'vertical-align': 'top', 'padding': '5px', 'margin': '10px', 'background-color': block_color}),
+        
+        dcc.Graph(id='carbon_tax_plot', style={'display': 'inline-block', 'width': '65%', 'vertical-align': 'top',  'padding': '5px', 'margin': '10px', 'background-color': block_color }),
     ])
 ])
 
@@ -332,6 +387,29 @@ def update_output(cost_target):
 def update_plot(ASU_cost, electricity_price_O2, electrolyzer_efficiency_O2, electrolyzer_cost_O2, capacity_factor_O2, NG_price, O2_price):
     return create_O2revenue_plot(ASU_cost, electricity_price_O2, electrolyzer_efficiency_O2, electrolyzer_cost_O2, capacity_factor_O2, NG_price, O2_price)
 
+
+@app.callback(
+    Output('carbon_tax_plot', 'figure'),
+    [
+        Input('NG_price_CO2', 'value'),
+        Input('CCUS_percent', 'value'),
+        Input('capture_rate', 'value'),
+        Input('carbon_tax', 'value'),
+        Input('electricity_price_CO2_start', 'value'),
+        Input('electricity_price_CO2_end', 'value'),
+        Input('electrolyzer_efficiency_CO2', 'value'),
+        Input('electrolyzer_cost_CO2', 'value'),
+        Input('capacity_factor_CO2', 'value'),
+    ]
+)
+def update_graph(NG_price_CO2, CCUS_percent, capture_rate, carbon_tax, electricity_price_CO2_start, 
+                 electricity_price_CO2_end, electrolyzer_efficiency_CO2, electrolyzer_cost_CO2, 
+                 capacity_factor_CO2):
+
+    return create_carbontax_plot(NG_price_CO2, CCUS_percent, capture_rate, carbon_tax, 
+        [electricity_price_CO2_start, electricity_price_CO2_end], 
+        electrolyzer_efficiency_CO2, electrolyzer_cost_CO2, capacity_factor_CO2
+    )
 
 if __name__ == '__main__':
     app.run_server(debug=True)
