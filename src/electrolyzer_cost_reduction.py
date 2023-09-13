@@ -4,7 +4,7 @@ import pandas as pd
 
 def plot_cost_reduction(method):
 
-    data = pd.read_csv("src\data\cost_reduction.csv", index_col=0)
+    data = pd.read_csv("src\\data\\cost_reduction.csv", index_col=0)
     alk_singlef_data = data[["alk_singlef",
                              "alk_singlef_s", "alk_singlef_l", "alk_singlef_sl"]]
     pem_singlef_data = data[["pem_singlef",

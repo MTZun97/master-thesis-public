@@ -11,7 +11,7 @@ def get_country_name(iso3_code):
 
 
 def generate_choropleth(status="all"):
-    filepath = 'src\data\Reference.xlsx'
+    filepath = 'src\\data\\Reference.xlsx'
     iea_data = pd.read_excel(filepath, header=0, sheet_name="iea_project")
     iea_data = iea_data[(iea_data["product"] == "H2")]
     iea_data = iea_data[(iea_data["technology"] == "ALK") | (iea_data["technology"] == "PEM") |

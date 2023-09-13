@@ -4,7 +4,7 @@ import pycountry
 
 
 def manufacturer_count():
-    filepath = 'src\data\Reference.xlsx'
+    filepath = 'src\\data\\Reference.xlsx'
     manufacturer_data = pd.read_excel(
         filepath, header=0, sheet_name="manufacturer")
     manufacturer_data['headquarter'] = manufacturer_data['headquarter']
