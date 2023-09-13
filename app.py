@@ -1,6 +1,7 @@
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
+
 from manufacturer import manufacturer_count
 from projects import project_count
 from project_choropleth import generate_choropleth
