@@ -14,7 +14,7 @@ countries = ["Australia", "Germany", "China", "Japan", "Canada", "United States"
 
 df_low = {}
 df_high = {}
-with pd.ExcelFile('data/lcoh_data.xlsx') as reader:
+with pd.ExcelFile('src\data\lcoh_data.xlsx') as reader:
     for country in countries:
         df_low[country] = pd.read_excel(reader, sheet_name=f'df_low_{country}', index_col='Index')
         df_high[country] = pd.read_excel(reader, sheet_name=f'df_high_{country}', index_col='Index')

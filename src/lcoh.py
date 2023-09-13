@@ -38,7 +38,7 @@ def lcoe(source, location):
     if source not in valid_sources:
         raise ValueError(f"Invalid source. Available sources: {valid_sources}")
 
-    lcoe_df = pd.read_csv("data/lcoe.csv")
+    lcoe_df = pd.read_csv("src\data\lcoe.csv")
     lcoe_df = lcoe_df[lcoe_df["entity"] == location].sort_values("year")
 
     # Create a DataFrame with a complete range of years
@@ -73,7 +73,7 @@ def lcoe_constant(source, location):
     if source not in valid_sources:
         raise ValueError(f"Invalid source. Available sources: {valid_sources}")
 
-    lcoe_df = pd.read_csv("data/lcoe.csv")
+    lcoe_df = pd.read_csv("src\data\lcoe.csv")
     lcoe_df = lcoe_df[lcoe_df["entity"] == location].sort_values("year")
 
     # Create a DataFrame with a complete range of years
