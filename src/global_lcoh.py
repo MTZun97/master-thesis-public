@@ -2,8 +2,11 @@ import pandas as pd
 from lcoh import cash_flow
 import plotly.graph_objects as go
 from lcoh import lcoe, lcoe_constant, valid_sources
+import os 
 
-df = pd.read_csv("src\\data\\cost_reduction.csv", index_col=0)
+csv_file_path = os.path.join(os.getcwd(), "src/data/cost_reduction.csv")
+
+df = pd.read_csv(csv_file_path, index_col=0)
 
 
 def capacity_factor(offshore_wind_lcoe=0.23, solar_lcoe=0.12, onshore_wind_lcoe=0.23):
