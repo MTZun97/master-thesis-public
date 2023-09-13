@@ -5,7 +5,7 @@ import os
 
 
 def plot_cost_reduction(method):
-    csv_file_path = os.path.join(os.getcwd(), "src/data/cost_reduction.csv")
+    csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "cost_reduction.csv"))
 
     data = pd.read_csv(csv_file_path, index_col=0)
 

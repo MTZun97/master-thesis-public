@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from lcoh import lcoe, lcoe_constant, valid_sources
 import os 
 
-csv_file_path = os.path.join(os.getcwd(), "src/data/cost_reduction.csv")
+csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "cost_reduction.csv"))
 
 df = pd.read_csv(csv_file_path, index_col=0)
 
