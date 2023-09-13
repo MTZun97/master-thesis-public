@@ -1,10 +1,14 @@
 import plotly.express as px
 import pandas as pd
+import os
+
 
 
 def plot_cost_reduction(method):
+    csv_file_path = os.path.join(os.getcwd(), "src/data/cost_reduction.csv")
 
-    data = pd.read_csv("src\\data\\cost_reduction.csv", index_col=0)
+    data = pd.read_csv(csv_file_path, index_col=0)
+
     alk_singlef_data = data[["alk_singlef",
                              "alk_singlef_s", "alk_singlef_l", "alk_singlef_sl"]]
     pem_singlef_data = data[["pem_singlef",
