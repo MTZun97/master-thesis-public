@@ -19,6 +19,18 @@ def manufacturer_count():
 
 
     fig.update_layout(
+        title=dict(
+            text='<b>Electrolyzer Manufacturer Count per Country<b>',
+            y=0.95, 
+            x=0.5,  
+            xanchor='center',  
+            yanchor='top',
+            font=dict(
+                family="Arial Bold",
+                size=20,
+                color="black"
+            ),  
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -27,7 +39,7 @@ def manufacturer_count():
             x=0.5,
             traceorder="normal",
             font=dict(
-                family="sans-serif",
+                family="Arial Bold",
                 size=12,
                 color="black"
             ),
@@ -35,6 +47,9 @@ def manufacturer_count():
             borderwidth=2,
             itemsizing='constant'
         ),
-        legend_title_text=''
+        legend_title_text='',
+        margin=dict(
+            t=100,  
+        )
     )
     return fig

@@ -36,6 +36,18 @@ def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax, elec
     fig.update_yaxes(title_text='LCOH ($/kgH2)')
 
     fig.update_layout(
+        title=dict(
+            text='<b>LCOH comparison: green, grey, and blue hydrogen<b>',
+            y=0.95, 
+            x=0.5,  
+            xanchor='center',  
+            yanchor='top',
+            font=dict(
+                family="Arial Bold",
+                size=20,
+                color="black"
+            ),  
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -44,7 +56,7 @@ def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax, elec
             x=0.5,
             traceorder="normal",
             font=dict(
-                family="sans-serif",
+                family="Arial Bold",
                 size=12,
                 color="black"
             ),
@@ -52,9 +64,13 @@ def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax, elec
             borderwidth=2,
             itemsizing='constant'
         ),
-        legend_title_text=''
+        legend_title_text='',
+        margin=dict(
+            t=100,  
+        )
     )
 
     return fig
+
 
 

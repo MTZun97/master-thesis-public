@@ -34,6 +34,7 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
     ], style={'text-align': 'center', 'margin-bottom': '10px'}),
     
     html.Div([
+
         dcc.Graph(
             id='manufacturer-count',
             figure=manufacturer_count(),
@@ -50,7 +51,7 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
     html.Br(),
     
     html.Div([
-        html.Label('Select Status:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        html.Label('Select Status of Projects:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
         dcc.Dropdown(
             id='status-dropdown',
             options=[
@@ -74,7 +75,7 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
     html.Br(),
     
     html.Div([
-        html.Label('Select Methodology:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
+        html.Label('Select Methodology of Electrolzyer Cost Reduction:', style={'font-weight': 'bold', 'margin-bottom': '10px'}),
         dcc.Dropdown(
             id='method-dropdown',
             options=[
@@ -412,4 +413,4 @@ def update_graph(NG_price_CO2, CCUS_percent, capture_rate, carbon_tax, electrici
     )
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

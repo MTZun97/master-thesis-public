@@ -25,6 +25,18 @@ def project_count():
                  labels={"country_converted": "Countries", "count": "Count"})
 
     fig.update_layout(
+        title=dict(
+            text='<b>Projects Count per Country<b>',
+            y=0.95, 
+            x=0.5,  
+            xanchor='center',  
+            yanchor='top',
+            font=dict(
+                family="Arial Bold",
+                size=20,
+                color="black"
+            ),  
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -33,7 +45,7 @@ def project_count():
             x=0.5,
             traceorder="normal",
             font=dict(
-                family="sans-serif",
+                family="Arial Bold",
                 size=12,
                 color="black"
             ),
@@ -42,9 +54,11 @@ def project_count():
             itemsizing='constant'
         ),
         legend_title_text='',
-        width=800,  # Adjust as needed
-        height=450  # Adjust as needed
+        margin=dict(
+            t=100,  
+        )
     )
+
 
 
     return fig
