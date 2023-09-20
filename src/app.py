@@ -310,14 +310,14 @@ app.layout = html.Div(style={'background-color': background_color, 'padding': '2
                        'border-radius': '4px',})
             ]),
         ], style={'width': '25%', 'display': 'inline-block', 'vertical-align': 'top', 'padding': '10px',
-                   'border-radius': '5px', "margin-left": "10px", 'height': '58vh',
+                   'border-radius': '5px', "margin-left": "10px", 'height': '480px',
                        'background-color': '#f9f9f9', 'padding':'10px'}),
 
 
         dcc.Graph(
             id='timeline_graph',
             style={'width': '70%', 'display': 'inline-block', 'margin-left': '15px',
-                          'vertical-align': 'top','height': '60vh',}
+                          'vertical-align': 'top','height': '500px',}
         )
     ], style={'width': '100%', 'margin': '0 auto', 'padding': '20px', 'border-radius': '5px'}),
 

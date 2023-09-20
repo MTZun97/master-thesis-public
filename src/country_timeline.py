@@ -95,7 +95,7 @@ def create_timeline_plot(cost_target):
         xaxis=dict(title='Year', range=[2000, 2050], tickfont=dict(size = 12)),
         yaxis=dict(title='Country', tickfont=dict(size = 12)),
         autosize=True,
-        height=700,
+        height=500,
     )
     
     fig.update_layout(
