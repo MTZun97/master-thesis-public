@@ -52,4 +52,5 @@ def manufacturer_count():
             t=100,  
         )
     )
+    fig.update_yaxes(title_text='Number of Manufacturers')
     return fig

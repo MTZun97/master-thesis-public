@@ -59,7 +59,7 @@ def project_count():
         )
     )
 
-
+    fig.update_yaxes(title_text='Number of Projects')
 
     return fig
 
