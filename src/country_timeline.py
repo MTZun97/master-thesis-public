@@ -60,7 +60,7 @@ def create_timeline_plot(cost_target):
                 mode='lines+markers',
                 name=trace_name,
                 line=dict(color=color, width=10),
-                marker=dict(color=color, size=20, symbol=sources_symbols.get(row['Source'], 'circle')),
+                marker=dict(color=color, size=20, symbol=sources_symbols.get(row['Source'])),
                 legendgroup=trace_name,
                 hovertemplate='<i>%{y}</i><br>Year: %{x}',
                 showlegend=False  # Do not show the legend for these traces
@@ -78,21 +78,28 @@ def create_timeline_plot(cost_target):
         ))
 
     # Add dummy traces for source types
+# Add dummy traces for source types
     for source, symbol in sources_symbols.items():
         fig.add_trace(go.Scatter(
             x=[None],
             y=[None],
             mode='markers',
             name=source,
-            marker=dict(symbol=symbol, size=10, color=colors[0] if source=='solar_lcoe' else colors[1]),
+            marker=dict(
+                symbol=symbol, 
+                size=10, 
+                line=dict(color='rgba(0,0,0,1)', width=2), # This sets the marker edge color to black
+                color='rgba(255, 255, 255, 0)' # This sets the marker fill color to transparent
+            ),
             showlegend=True
         ))
+
 
     # Update layout
     fig.update_layout(
         title='<b>Timeline Plot of Countries to Achieve target LCOH<b>',
         title_font=dict(size=18, family='Arial', color='black'),title_x = 0.5,
-        xaxis=dict(title='Year', range=[2000, 2050], tickfont=dict(size = 12)),
+        xaxis=dict(title='Year', range=[2010, 2050], tickfont=dict(size = 12)),
         yaxis=dict(title='Country', tickfont=dict(size = 12)),
         autosize=True,
         height=500,
