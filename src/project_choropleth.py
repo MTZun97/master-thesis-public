@@ -52,12 +52,7 @@ def generate_choropleth(status="all"):
                         )
     
     fig.update_coloraxes(colorbar_title='<b>' +
-                         value.replace("normalized_capacity_Mwel", "") + "MWel/y" + '</b>')
-    title = f"Total Current and Projected Installed Capacity per Country [Status - {status}]"
-    if title:
-        fig.update_layout(title_text='<b>' + title + '</b>',
-                          title_x=0.5,
-                          title_font=dict(family="Helvetica Neue, Arial", size=24, color='black'))
+                         value.replace("normalized_capacity_Mwel", "") + "MW<sub>el</sub>/y" + '</b>')
 
     fig.update_layout(margin=dict(l=10, r=10, t=50, b=50))
 
@@ -74,8 +69,8 @@ def generate_choropleth(status="all"):
                 value.replace("normalized_capacity_Mwel", "") +
                 "MWel/y" + '</b>',
                 font=dict(
-                    family="Helvetica Neue, Arial",
-                    size=16,
+                    family="Arial Bold",  # Include "Arial Bold" in the family
+                    size=30,
                     color='black'
                 )
             ),
@@ -85,11 +80,12 @@ def generate_choropleth(status="all"):
             len=400,
             yanchor='top',
             y=0.85,
-            tickfont=dict(size=14),
+            tickfont=dict(size=24, color='black', family="Arial Bold"),  # Set the tickfont to bold as well
             x=0.9,
             xanchor='left'
         )
     )
+
 
     fig.update_traces(hovertemplate=hover_template)
 

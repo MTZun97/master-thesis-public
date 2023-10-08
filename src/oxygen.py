@@ -243,24 +243,39 @@ def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency,
 
     df = pd.DataFrame.from_dict(data_dict).set_index("O2_price")
     
-    fig = px.line(df, x=df.index, y=df.columns)
+    fig = go.Figure()
 
-    # Adding labels and title
-    fig.update_xaxes(title_text='O2 Price ($/kgO2)')
-    fig.update_yaxes(title_text='LCOH ($/kgH2)')
+    # Adding LCOH Line
+    fig.add_trace(go.Scatter(x=df.index, y=df['LCOH'],
+                             mode='lines',
+                             name='Green H<sub>2</sub>',
+                             line=dict(color='#00CC96', width=4),
+                             hovertemplate='LCOH: %{y:.2f} $/kg<sub>H2</sub>'))
+
+    # Adding LCOH - O2 Revenue Line
+    fig.add_trace(go.Scatter(x=df.index, y=df['LCOH - O2 Revenue'],
+                             mode='lines',
+                             name='Green H<sub>2</sub> + O<sub>2</sub> Revenue',
+                             line=dict(color='#FFA15A', width=4),
+                             hovertemplate='LCOH: %{y:.2f} $/kg<sub>H2</sub>'))
+
+    # Adding LCOH - SMR Line
+    fig.add_trace(go.Scatter(x=df.index, y=df['LCOH - SMR'],
+                             mode='lines',
+                             name='Grey H<sub>2</sub>',
+                             line=dict(color='#7F7F7F', width=4),
+                             hovertemplate='LCOH: %{y:.2f} $/kg<sub>H2</sub>'))
 
     fig.update_layout(
-        title=dict(
-            text='<b>Impact of additional oxygen revenue stream to LCOH<b>',
-            y=0.95, 
-            x=0.5,  
-            xanchor='center',  
-            yanchor='top',
-            font=dict(
-                family="Arial Bold",
-                size=20,
-                color="black"
-            ),  
+        yaxis=dict(
+            title_text='LCOH ($/kg<sub>H<sub>2</sub></sub>)',
+            title_font=dict(family='Arial, bold', size=20),
+            tickfont=dict(family='Arial, bold', size=16),
+        ),
+        xaxis=dict(
+            title_text='Oxygen Price ($/kg<sub>O<sub>2</sub></sub>)',
+            title_font=dict(family='Arial, bold', size=20),
+            tickfont=dict(family='Arial, bold', size=16),
         ),
         legend=dict(
             orientation="h",
@@ -271,7 +286,7 @@ def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency,
             traceorder="normal",
             font=dict(
                 family="Arial Bold",
-                size=12,
+                size=16,
                 color="black"
             ),
             bordercolor="Black",
@@ -280,7 +295,7 @@ def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency,
         ),
         legend_title_text='',
         margin=dict(
-            t=100,  
+            t=50,  
         )
     )
 

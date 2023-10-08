@@ -102,9 +102,9 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         orientation='h',
         name='Low',
         marker=dict(
-            color='rgba(76, 114, 176, 1)',
+            color='#636EFA',
             line=dict(
-                color='rgba(76, 114, 176, 1)',
+                color='#636EFA',
                 width=3)
         )
     ))
@@ -118,24 +118,26 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         orientation='h',
         name='High',
         marker=dict(
-            color='rgba(196, 57, 50, 1)',
+            color='#FF6692',
             line=dict(
-                color='rgba(196, 57, 50, 1)',
+                color='#FF6692',
                 width=3)
         )
     ))
 
 
     fig.update_layout(
-        title='<b>Sensitivity Analysis of Green Hydrogen Production Cost<b>',
-        xaxis_title='Percentage Change in LCOH (%)',
-        yaxis_title='Parameters',
+        xaxis=dict(
+            title_text='Percentage Change in LCOH (%)',
+            title_font=dict(family='Arial, bold', size=20),
+            tickfont=dict(family='Arial, bold', size=16),
+        ),
         yaxis=dict(
+            tickfont=dict(family='Arial, bold', size=16),
             tickvals=list(range(len(ordered_keys))),
         ),
         barmode='relative', showlegend=False, title_x=0.5, 
-        title_font=dict(size=18, family='Arial Bold', color='black')
+        title_font=dict(size=20, family='Arial Bold', color='black')
     )
-
 
     return fig

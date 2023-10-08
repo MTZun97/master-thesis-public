@@ -53,28 +53,25 @@ lcoh_data = {"low_alk": low_alk, "high_alk": high_alk, "average_alk": average_al
 #         lcoh_data[f"{setting_type}_{tech_type}"] = pd.DataFrame(
 #             data).set_index('Index')
 
-
 def global_lcoh(electrolyzer_type="alk"):
     fig = go.Figure()
 
-
     sources = ['offshore_wind_lcoe', 'solar_lcoe', 'onshore_wind_lcoe']
     source_names = ['Offshore Wind LCOH', 'Solar LCOH', 'Onshore Wind LCOH']
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    colors = ['#636EFA', '#00CC96', '#FF6692']
 
     for idx, source in enumerate(sources):
         legend_group = f"group_{idx}"
 
         fig.add_trace(go.Scatter(
-            x=lcoh_data[f'low_{electrolyzer_type}'].index.tolist(
-            ) + lcoh_data[f'high_{electrolyzer_type}'].index.tolist()[::-1],
-            y=lcoh_data[f'low_{electrolyzer_type}'][source].tolist(
-            ) + lcoh_data[f'high_{electrolyzer_type}'][source].tolist()[::-1],
+            x=lcoh_data[f'low_{electrolyzer_type}'].index.tolist() + lcoh_data[f'high_{electrolyzer_type}'].index.tolist()[::-1],
+            y=lcoh_data[f'low_{electrolyzer_type}'][source].tolist() + lcoh_data[f'high_{electrolyzer_type}'][source].tolist()[::-1],
             fill='toself',
             fillcolor=f'rgba({int(colors[idx][1:3], 16)}, {int(colors[idx][3:5], 16)}, {int(colors[idx][5:7], 16)}, 0.2)',
             line=dict(color='rgba(255,255,255,0)'),
             showlegend=False,
             legendgroup=legend_group,
+            hoverinfo='skip'  # this trace will not display hover info
         ))
 
         fig.add_trace(go.Scatter(
@@ -84,21 +81,20 @@ def global_lcoh(electrolyzer_type="alk"):
             line=dict(color=colors[idx]),
             name=source_names[idx],
             legendgroup=legend_group,
+            hovertemplate='Year: %{x}<br>' + source_names[idx] + ': %{y:.2f}<extra></extra>',  # customize hover template here
         ))
 
 
     fig.update_layout(
-        title=dict(
-            text=f"<b>Global Levelized Cost of Hydrogen for {'Alkaline' if electrolyzer_type == 'alk' else 'PEM'} Electrolyzers<b>",
-            y=0.95, 
-            x=0.5,  
-            xanchor='center',  
-            yanchor='top',
-            font=dict(
-                family="Arial Bold",
-                size=20,
-                color="black"
-            ),  
+        yaxis=dict(
+            title_text='LCOH ($/kg<sub>H<sub>2</sub></sub>)',
+            title_font=dict(family='Arial, bold', size=20),
+            tickfont=dict(family='Arial, bold', size=16),
+        ),
+        xaxis=dict(
+            title_text='Electricity Price ($/kWh)',
+            title_font=dict(family='Arial, bold', size=20),
+            tickfont=dict(family='Arial, bold', size=16),
         ),
         legend=dict(
             orientation="h",
@@ -109,7 +105,7 @@ def global_lcoh(electrolyzer_type="alk"):
             traceorder="normal",
             font=dict(
                 family="Arial Bold",
-                size=12,
+                size=16,
                 color="black"
             ),
             bordercolor="Black",
@@ -118,10 +114,9 @@ def global_lcoh(electrolyzer_type="alk"):
         ),
         legend_title_text='',
         margin=dict(
-            t=100,  
+            t=50,  
         )
     )
-    fig.update_yaxes(title_text='Levelized Cost of Hydrogen ($/kgH2)')
 
     return fig
 

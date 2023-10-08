@@ -1,121 +1,140 @@
 import pandas as pd
-from lcoh import valid_sources, lcoe, lcoe_constant
-from lcoh import cash_flow
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
 import plotly.graph_objects as go
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import dash
 import os
+from plotly.subplots import make_subplots
 
-countries = ["Australia", "Germany", "China", "Japan", "Canada", "United States", "United Kingdom", "Sweden", "Spain", "France", "Denmark"]
-csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "lcoh_data.xlsx"))
+# Step 1: Load data
+countries = ["Canada", "Denmark", "Sweden", "China", "France", "Germany", "Japan", "United States", "United Kingdom", "Spain", "Australia", "Netherlands"]
+file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "lcoh_data.xlsx"))
+
 df_low = {}
 df_high = {}
-with pd.ExcelFile(csv_file_path) as reader:
+with pd.ExcelFile(file_path) as reader:
     for country in countries:
         df_low[country] = pd.read_excel(reader, sheet_name=f'df_low_{country}', index_col='Index')
         df_high[country] = pd.read_excel(reader, sheet_name=f'df_high_{country}', index_col='Index')
 
 def get_earliest_year(df_data, target):
-    results_dfs = []  # This will store individual dataframes which will be concatenated later
-
+    results_dfs = []
     for country, df_country in df_data.items():
         earliest_years = [(source, df_country[source].loc[df_country[source] < target].index[0]) for source in df_country.columns if df_country[source].loc[df_country[source] < target].index.any()]
         earliest_years.sort(key=lambda x: x[1])
-        
-        # Creating a DataFrame for each iteration and storing it in the list
         results_dfs.append(pd.DataFrame([{'Country': country, 'Source': earliest_years[0][0] if earliest_years else None, 'Year': earliest_years[0][1] if earliest_years else None}]))
-
-    results_df = pd.concat(results_dfs, ignore_index=True)  # Concatenating all the dataframes in the list
+    results_df = pd.concat(results_dfs, ignore_index=True)
     return results_df
 
-
+def create_trace(df_low, df_high, color_low, color_high, sources_symbols, countries):
+    traces = []
+    for source, symbol in sources_symbols.items():
+        for country in countries:
+            country_data_low = df_low[(df_low['Country'] == country) & (df_low['Source'] == source)]
+            country_data_high = df_high[(df_high['Country'] == country) & (df_high['Source'] == source)]
+            
+            if not country_data_low.empty:
+                traces.append(
+                    go.Scatter(
+                        x=country_data_low['Year'],
+                        y=country_data_low['Country'],
+                        mode='lines+markers',
+                        name=f"Optimistic - {source}",
+                        line=dict(color=color_low, width=2),
+                        marker=dict(color=color_low, size=15, symbol=symbol),
+                        legendgroup=source,
+                        showlegend=False
+                    )
+                )
+            if not country_data_high.empty:
+                traces.append(
+                    go.Scatter(
+                        x=country_data_high['Year'],
+                        y=country_data_high['Country'],
+                        mode='lines+markers',
+                        name=f"Pessimistic - {source}",
+                        line=dict(color=color_high, width=2),
+                        marker=dict(color=color_high, size=15, symbol=symbol),
+                        legendgroup=source,
+                        showlegend=False
+                    )
+                )
+            
+            if (country in ["Canada", "Sweden", "Denmark"] and source == "solar_lcoe") or (country in ["Australia", "Netherlands"] and source == "onshore_wind_lcoe"):
+                traces.append(
+                    go.Scatter(
+                        x=[2047],  # Adjust the x-coordinate as necessary
+                        y=[country],
+                        mode='text',
+                        name=f"No Data - {source}",
+                        text="No Data",
+                        textfont=dict(size=16, color='gray'),  # Set your desired font size and color
+                        legendgroup=source,
+                        showlegend=False,
+                        hoverinfo='y+text'
+                    )
+                )
+    return traces
 
 def create_timeline_plot(cost_target):
-    # Convert tuple colors to hexadecimal
+    results_df_low = get_earliest_year(df_low, target=cost_target)
+    results_df_high = get_earliest_year(df_high, target=cost_target)
+    min_year = min(results_df_low['Year'].min(), results_df_high['Year'].min())-5
+    max_year = 2050
 
-    results_df_low = get_earliest_year(df_low, target = cost_target)
-    results_df_high = get_earliest_year(df_high, target= cost_target)
-    # Convert tuple colors to hexadecimal
-    colors = ['#{:02x}{:02x}{:02x}'.format(int(r*255), int(g*255), int(b*255)) 
-            for r, g, b in [(0.7686274509803922, 0.3058823529411765, 0.3215686274509804), 
-                            (0.2980392156862745, 0.4470588235294118, 0.6901960784313725)]]
-
-    fig = go.Figure()
-
+    colors = {'Optimistic': '#636EFA', 'Pessimistic': '#FF6692'}
     sources_symbols = {'solar_lcoe': 'circle', 'onshore_wind_lcoe': 'square'}
+    
+    fig = make_subplots(rows=1, cols=2, subplot_titles=("Solar Energy", "Onshore Wind Energy"), shared_yaxes=True, horizontal_spacing=0.05, vertical_spacing=0.1)
+    for trace in create_trace(results_df_low, results_df_high, colors['Optimistic'], colors['Pessimistic'], sources_symbols, countries):
+        col = 1 if 'solar' in trace.name else 2
+        fig.add_trace(trace, row=1, col=col)
 
-    # Add a trace for each country in the low and high data
-    for df, trace_name, color in zip([results_df_low, results_df_high], ['Optimistic', 'Pessimistic'], colors):
-        for idx, row in df.iterrows():
-            if pd.isna(row['Year']):
-                continue
+    for i in range(len(fig.layout.annotations)):
+        fig.layout.annotations[i].font.size = 16  # or whatever font size you want
 
-            fig.add_trace(go.Scatter(
-                x=[row['Year'], 2052],
-                y=[row['Country'], row['Country']],
-                mode='lines+markers',
-                name=trace_name,
-                line=dict(color=color, width=10),
-                marker=dict(color=color, size=20, symbol=sources_symbols.get(row['Source'])),
-                legendgroup=trace_name,
-                hovertemplate='<i>%{y}</i><br>Year: %{x}',
-                showlegend=False  # Do not show the legend for these traces
-            ))
 
-    # Add dummy traces for legend
-    for trace_name, color in zip(['Optimistic', 'Pessimistic'], colors):
-        fig.add_trace(go.Scatter(
+    fig.add_trace(
+        go.Scatter(
             x=[None],
             y=[None],
             mode='lines',
-            name=trace_name,
-            line=dict(color=color, width=2),
+            line=dict(color=colors['Optimistic'], width=2),
+            name='Optimistic',
             showlegend=True
-        ))
-
-    # Add dummy traces for source types
-# Add dummy traces for source types
-    for source, symbol in sources_symbols.items():
-        fig.add_trace(go.Scatter(
+        ),
+        row=1, col=1  # Add to the first subplot (solar graph)
+    )
+    fig.add_trace(
+        go.Scatter(
             x=[None],
             y=[None],
-            mode='markers',
-            name=source,
-            marker=dict(
-                symbol=symbol, 
-                size=10, 
-                line=dict(color='rgba(0,0,0,1)', width=2), # This sets the marker edge color to black
-                color='rgba(255, 255, 255, 0)' # This sets the marker fill color to transparent
-            ),
+            mode='lines',
+            line=dict(color=colors['Pessimistic'], width=2),
+            name='Pessimistic',
             showlegend=True
-        ))
-
+        ),
+        row=1, col=1  # Add to the first subplot (solar graph)
+    )
 
     # Update layout
     fig.update_layout(
-        title='<b>Timeline Plot of Countries to Achieve target LCOH<b>',
-        title_font=dict(size=18, family='Arial', color='black'),title_x = 0.5,
-        xaxis=dict(title='Year', range=[2010, 2050], tickfont=dict(size = 12)),
-        yaxis=dict(title='Country', tickfont=dict(size = 12)),
-        autosize=True,
-        height=500,
-    )
-    
-    fig.update_layout(
+        yaxis=dict(
+            tickfont=dict(family='Arial, bold', size=16),
+        ),
+        xaxis=dict(
+            tickfont=dict(family='Arial, bold', size=16),
+        ),
+        xaxis2=dict(
+            tickfont=dict(family='Arial, bold', size=16),  # Adjust the font size here for the second subplot
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=1.02,
+            y=1.1,
             xanchor="center",
             x=0.5,
             traceorder="normal",
             font=dict(
-                family="sans-serif",
-                size=12,
+                family="Arial Bold",
+                size=16,
                 color="black"
             ),
             bordercolor="Black",
@@ -124,6 +143,8 @@ def create_timeline_plot(cost_target):
         ),
         legend_title_text=''
     )
+    fig.update_xaxes(range=[min_year, max_year])
 
     return fig
+
 
