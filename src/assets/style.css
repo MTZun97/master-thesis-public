@@ -19,11 +19,11 @@
     display: inline-block;
     vertical-align: top;
     padding: 1vh;
-    height: 50vh; 
+    height: 70vh; 
     background-color: #ffffff;
     overflow-y: auto; 
 }
-.div-choropleth-left {
+.div-large-left {
     width: 30%;
     display: inline-block;
     vertical-align: top;
@@ -39,11 +39,11 @@
     display: inline-block;
     margin-left: 2%;
     vertical-align: top;
-    height: 50vh;
+    height: 70vh;
     overflow: hidden; 
 }
 
-.div-choropleth-right {
+.div-large-right {
     width: 65%;
     display: inline-block;
     margin-left: 2%; 

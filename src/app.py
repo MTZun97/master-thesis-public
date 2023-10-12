@@ -93,9 +93,9 @@ app.layout = html.Div(style={'background-color': '#f2f2f2', 'padding': '2vh'},
                 html.Br(), html.Br(), 
                 "Data Source: IEA Hydrogen Projects Database"
             ], className = 'div-text'),
-        ], className='div-choropleth-left'),
+        ], className='div-large-left'),
 
-        dcc.Graph(id='choropleth', className='div-choropleth-right'),
+        dcc.Graph(id='choropleth', className='div-large-right'),
     ], className='div'),
 
     html.Hr(),

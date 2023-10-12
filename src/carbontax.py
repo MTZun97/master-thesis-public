@@ -77,7 +77,7 @@ def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax,
             traceorder="normal",
             font=dict(
                 family="Arial Bold",
-                size=20,
+                size=16,
                 color="black"
             ),
             bordercolor="Black",
