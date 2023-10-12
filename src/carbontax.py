@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 
-def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax, electricity_price_CO2, 
-                          electrolyzer_efficiency_CO2, electrolyzer_cost_CO2, capacity_factor_CO2):
+def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax, 
+                          electrolyzer_efficiency_CO2, electrolyzer_cost_CO2, capacity_factor_CO2, electricity_price_CO2= [0, 100]):
     
     electricity_price_CO2 = np.arange(electricity_price_CO2[0], electricity_price_CO2[1], 5).round(3)
 
@@ -14,14 +14,14 @@ def create_carbontax_plot(NG_price, CCUS_percent, capture_rate, carbon_tax, elec
     lcoh_smr  = [(i * 5.08) + 0.3918 for i in gas_price]
     lcoh_smr_ccus = [i* (1 + CCUS_percent/100) for i in lcoh_smr]
     lcoh_smr_tax = [i + carbon_tax/100 for i in lcoh_smr]
-    lcoh_smr_ccus_tax = [i + ((carbon_tax/100) * (1-capture_rate/100)) for i in lcoh_smr]
+    lcoh_smr_ccus_tax = [i + ((carbon_tax/100) * (1-capture_rate/100)) for i in lcoh_smr_ccus]
 
     lcoh_list = []
     for i in electricity_price_CO2:
         lcoh, _ = cash_flow(cap_factor = capacity_factor_CO2, electrolyzer_cost= electrolyzer_cost_CO2, 
                             electricity_price = i/1000, O2 = 0, electrolyzer_efficiency = electrolyzer_efficiency_CO2,
                              mech_percent=0.3, elect_percent=0.2, water_rate = 0.00237495008, current_density=2, 
-                             stack_percent=0.6, ASU_cost = 200, startup_year = 2021)
+                             stack_percent=0.6, startup_year = 2021)
         lcoh_list.append(lcoh)
 
     data_dict = {"electricity_price": electricity_price_CO2, "LCOH": lcoh_list, "LCOH - SMR": lcoh_smr, 

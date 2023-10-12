@@ -1,0 +1,186 @@
+/* Global settings */
+* {
+    box-sizing: border-box;
+}
+
+/* Styling for the outer parent Div */
+.div {
+    width: 100%;
+    padding: 2vh;
+    margin: 0 auto;
+    border-radius: 0.5vh;
+    position: relative; 
+    text-align: center;
+}
+
+/* Styling for the left inner Div containing text */
+.div-left {
+    width: 30%;
+    display: inline-block;
+    vertical-align: top;
+    padding: 1vh;
+    height: 50vh; 
+    background-color: #ffffff;
+    overflow-y: auto; 
+}
+.div-choropleth-left {
+    width: 30%;
+    display: inline-block;
+    vertical-align: top;
+    padding: 1vh;
+    height: 70vh; 
+    background-color: #ffffff;
+    overflow-y: auto; 
+}
+
+/* Styling for the right inner Div containing the graph */
+.div-right {
+    width: 65%;
+    display: inline-block;
+    margin-left: 2%;
+    vertical-align: top;
+    height: 50vh;
+    overflow: hidden; 
+}
+
+.div-choropleth-right {
+    width: 65%;
+    display: inline-block;
+    margin-left: 2%; 
+    vertical-align: top;
+    height: 70vh;
+    overflow: hidden; 
+}
+
+/* Styling for the text inside the left inner Div */
+.div-text {
+    font-size: 0.9vw;
+    color: #000000;
+    text-align: justify;
+    padding: 2vh;
+}
+
+.div-note {
+    font-size: 0.7vw;
+    color: #000000;
+    text-align: justify;
+    margin-top: 1vh;
+    margin-left: 5vh;
+}
+
+/* Styling for the dropdown label */
+.div-label {
+    font-weight: bold;
+    font-size: 1vw;
+    display: inline-block; 
+    vertical-align: middle; 
+    margin-left: 2%; 
+    margin-right: 2%; 
+    width: 30%;
+}
+
+.div-sub-label {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 1.05vw;
+    vertical-align: middle; 
+    width: 100%;
+    text-align: left;
+}
+
+
+/* General Styling for the dropdown */
+.dash-dropdown {
+    width: 66%; 
+    font-size: 1vw;
+    text-align: center;
+    padding: 0.5vh 0.5vw;
+    line-height: normal;
+    position: relative;
+    z-index: 1000;
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: 0.5vh;
+}
+.div-dropdown .Select-control,
+.div-dropdown .Select-value,
+.div-dropdown .Select-input,
+.div-dropdown .Select-menu-outer {
+    height: auto;
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+}
+.div-dropdown .Select-value,
+.div-dropdown .Select-input,
+.div-dropdown .Select-value-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.div-dropdown .Select-placeholder {
+    line-height: normal;
+    padding: 0.5vh 0;
+}
+
+
+/* Div Table Styles */
+.div-table {
+    display: table;
+    width: 90%;
+    border-collapse: collapse;
+    border: 0.05vh solid #ddd;
+    font-size: 0.9vw; 
+    justify-content: center;
+    margin: auto;
+}
+
+.div-table th, .div-table td {
+    border: 0.05vh solid #ddd;
+    padding: 1vh; /* Adjust padding for a spacious look */
+    text-align: center;
+}
+
+.div-table th {
+    background-color: #f2f2f2;
+    font-weight: bold; /* Bold headers for differentiation */
+}
+
+div[style*="box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2)"] {
+    padding: 2vh;
+    margin: 1vh;
+}
+
+
+.div-slider-container {
+    width: 100%;
+    align-items: center; 
+    display:inline-flex ;
+    padding: 0.5vh;
+    margin-top: 1vh;
+    margin-bottom: 0.1vh;
+}
+
+.div-slider-container-label {
+    width: 25%;
+    display: inline-block;
+    font-size: 0.8vw;
+    margin: 0;
+    text-align: left;
+    vertical-align: middle !important;
+}
+
+.div-slider-container-slider {
+    display: 'inline-block';
+    width: 60%;
+    flex-grow: 1;
+    margin: auto;
+    margin-left: 5%;
+    vertical-align: middle !important;
+    text-align: center;
+}
+
+.div-slider-container-slider .rc-slider-mark-text {
+    font-size: 0.7vw;  /* Adjust this value to your preference */
+}

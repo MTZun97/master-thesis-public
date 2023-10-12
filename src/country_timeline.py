@@ -17,11 +17,12 @@ with pd.ExcelFile(file_path) as reader:
 def get_earliest_year(df_data, target):
     results_dfs = []
     for country, df_country in df_data.items():
-        earliest_years = [(source, df_country[source].loc[df_country[source] < target].index[0]) for source in df_country.columns if df_country[source].loc[df_country[source] < target].index.any()]
-        earliest_years.sort(key=lambda x: x[1])
-        results_dfs.append(pd.DataFrame([{'Country': country, 'Source': earliest_years[0][0] if earliest_years else None, 'Year': earliest_years[0][1] if earliest_years else None}]))
+        earliest_years = {source: df_country[source].loc[df_country[source] < target].index[0] if df_country[source].loc[df_country[source] < target].index.any() else None for source in df_country.columns}
+        earliest_years['Country'] = country
+        results_dfs.append(pd.DataFrame([earliest_years]))
     results_df = pd.concat(results_dfs, ignore_index=True)
     return results_df
+
 
 def create_trace(df_low, df_high, color_low, color_high, sources_symbols, countries):
     traces = []
@@ -33,11 +34,10 @@ def create_trace(df_low, df_high, color_low, color_high, sources_symbols, countr
             if not country_data_low.empty:
                 traces.append(
                     go.Scatter(
-                        x=country_data_low['Year'],
-                        y=country_data_low['Country'],
-                        mode='lines+markers',
+                        x=country_data_low['Year'].values,
+                        y=[country for _ in range(len(country_data_low['Year'].values))],
+                        mode='markers',
                         name=f"Optimistic - {source}",
-                        line=dict(color=color_low, width=2),
                         marker=dict(color=color_low, size=15, symbol=symbol),
                         legendgroup=source,
                         showlegend=False
@@ -46,11 +46,10 @@ def create_trace(df_low, df_high, color_low, color_high, sources_symbols, countr
             if not country_data_high.empty:
                 traces.append(
                     go.Scatter(
-                        x=country_data_high['Year'],
-                        y=country_data_high['Country'],
-                        mode='lines+markers',
+                        x=country_data_high['Year'].values,
+                        y=[country for _ in range(len(country_data_high['Year'].values))],
+                        mode='markers',
                         name=f"Pessimistic - {source}",
-                        line=dict(color=color_high, width=2),
                         marker=dict(color=color_high, size=15, symbol=symbol),
                         legendgroup=source,
                         showlegend=False
@@ -74,8 +73,12 @@ def create_trace(df_low, df_high, color_low, color_high, sources_symbols, countr
     return traces
 
 def create_timeline_plot(cost_target):
-    results_df_low = get_earliest_year(df_low, target=cost_target)
-    results_df_high = get_earliest_year(df_high, target=cost_target)
+    results_df_low = get_earliest_year(df_low, cost_target)
+    results_df_low = results_df_low.melt(id_vars=['Country'], var_name='Source', value_name='Year')
+
+    results_df_high = get_earliest_year(df_high, cost_target)
+    results_df_high = results_df_high.melt(id_vars=['Country'], var_name='Source', value_name='Year')
+
     min_year = min(results_df_low['Year'].min(), results_df_high['Year'].min())-5
     max_year = 2050
 
@@ -146,5 +149,3 @@ def create_timeline_plot(cost_target):
     fig.update_xaxes(range=[min_year, max_year])
 
     return fig
-
-

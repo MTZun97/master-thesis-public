@@ -70,7 +70,7 @@ def generate_choropleth(status="all"):
                 "MWel/y" + '</b>',
                 font=dict(
                     family="Arial Bold",  # Include "Arial Bold" in the family
-                    size=30,
+                    size=24,
                     color='black'
                 )
             ),
@@ -78,11 +78,9 @@ def generate_choropleth(status="all"):
             thickness=20,
             lenmode="pixels",
             len=400,
-            yanchor='top',
-            y=0.85,
+            yanchor='middle',
             tickfont=dict(size=24, color='black', family="Arial Bold"),  # Set the tickfont to bold as well
-            x=0.9,
-            xanchor='left'
+            xanchor='right'
         )
     )
 

@@ -10,7 +10,7 @@ from lcoh import lcoe,depreciation_table, CPI_df
 
 def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
               electrolyzer_efficiency, mech_percent=0.3, elect_percent=0.2, water_rate = 0.00237495008,
-              current_density=2, stack_percent=0.6, ASU_cost = 200, startup_year = 2021):
+              current_density=2, stack_percent=0.6, startup_year = 2021):
     
     elect_df= pd.DataFrame({"year": range(1983, 2100), "electricity_price": [electricity_price] * len(range(1983, 2100))}).set_index("year")
     CPI_inflator                       = CPI_df.loc[var.ref_year, "value"]/CPI_df.loc[var.basis_year, "value"]
@@ -139,7 +139,7 @@ def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
     #13. Oxygen Sales
     oxygen_sales = [i * 8 for i in hydrogen_sales]
     oxygen_revenue = [i * O2 for i in hydrogen_sales]
-    oxygen_capital_cost = [-ASU_cost*i/1000 for i in oxygen_sales]
+
 
 
     dict = {"actual_year": actual_year, "analysis_year": analysis_year, "operation_year": operation_year,
@@ -148,7 +148,7 @@ def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
             "other_nondepr_cost": other_nondepr_cost, "salvage": salvage, "decomission": decomission, 
             "fixed_operating_cost": fixed_operating_cost,
             "other_variable_operating_cost": other_variable_operating_cost, "depreciation_charge": depr_charge,
-           "hydrogen_sales": hydrogen_sales, "oxygen_sales": oxygen_sales, "oxygen_capital_cost": oxygen_capital_cost,
+           "hydrogen_sales": hydrogen_sales, "oxygen_sales": oxygen_sales, 
             "oxygen_revenue": oxygen_revenue}
     
     df = pd.DataFrame.from_dict(dict)
@@ -184,8 +184,6 @@ def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
     lcoh_oxygen_sales = (npf.npv(var.real_irr,df["oxygen_sales"]))
 
 
-    lcoh_oxygen_capital = (npf.npv(var.real_irr,df["oxygen_capital_cost"]))
-
     lcoh_oxygen_revenue = (npf.npv(var.real_irr,df["oxygen_revenue"]))
    
 
@@ -204,7 +202,6 @@ def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
     lcoh_var_op_cost = (-(lcoh_other_variable_operating_cost)
                     * (1 - total_tax_rate))/lcoh_H2_sales * (1+ var.inflation_rate)**1/inflation_factor
     
-    lcoh_capital_costs_O2 = (- (lcoh_oxygen_capital) * 1) /lcoh_H2_sales * (1+ var.inflation_rate)**1/inflation_factor
        
     
     lcoh_O2_revenue = (-(lcoh_oxygen_revenue)
@@ -212,15 +209,15 @@ def cash_flow(cap_factor, electrolyzer_cost, electricity_price, O2,
     
     lcoh = np.round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost, 3)
     lcoh_O2 = np.round(lcoh_capital_costs + lcoh_depreciation + lcoh_fixed_op_cost + lcoh_var_op_cost+
-                    lcoh_capital_costs_O2  + lcoh_O2_revenue, 3)
+                    lcoh_O2_revenue, 3)
 
 
 
     return lcoh, lcoh_O2
 
-def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency, 
+def create_O2revenue_plot(electricity_price, electrolyzer_efficiency, 
                           electrolyzer_cost, capacity_factor, 
-                          NG_price, O2_price = [0, 5]):
+                          NG_price, O2_price = [0, 4.5]):
     
     O2_value = np.arange(O2_price[0], O2_price[1], 0.1).round(1)
 
@@ -229,7 +226,7 @@ def create_O2revenue_plot(ASU_cost, electricity_price, electrolyzer_efficiency,
     for i in O2_value:
         lcoh, lcoh_O2 = cash_flow(cap_factor = capacity_factor, 
                                             electrolyzer_cost = electrolyzer_cost, electricity_price = electricity_price, 
-                                            O2 = i, electrolyzer_efficiency = electrolyzer_efficiency, ASU_cost = ASU_cost)
+                                            O2 = i, electrolyzer_efficiency = electrolyzer_efficiency)
         lcoh_O2_list.append(lcoh_O2)
         lcoh_list.append(lcoh)
 
