@@ -2,19 +2,27 @@ import pandas as pd
 from lcoh import cash_flow
 import plotly.graph_objects as go
 from lcoh import lcoe, lcoe_constant, valid_sources
-import os 
+import os
 
-csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "global_lcoh_data.xlsx"))
+csv_file_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "data", "global_lcoh_data.xlsx")
+)
 
-low_alk = pd.read_excel(csv_file_path, index_col=0, sheet_name = "low_alk")
-high_alk = pd.read_excel(csv_file_path, index_col=0, sheet_name = "high_alk")
-average_alk = pd.read_excel(csv_file_path, index_col=0, sheet_name = "average_alk")
-low_pem = pd.read_excel(csv_file_path, index_col=0, sheet_name = "low_pem")
-high_pem = pd.read_excel(csv_file_path, index_col=0, sheet_name = "high_pem")
-average_pem = pd.read_excel(csv_file_path, index_col=0, sheet_name = "average_pem")
+low_alk = pd.read_excel(csv_file_path, index_col=0, sheet_name="low_alk")
+high_alk = pd.read_excel(csv_file_path, index_col=0, sheet_name="high_alk")
+average_alk = pd.read_excel(csv_file_path, index_col=0, sheet_name="average_alk")
+low_pem = pd.read_excel(csv_file_path, index_col=0, sheet_name="low_pem")
+high_pem = pd.read_excel(csv_file_path, index_col=0, sheet_name="high_pem")
+average_pem = pd.read_excel(csv_file_path, index_col=0, sheet_name="average_pem")
 
-lcoh_data = {"low_alk": low_alk, "high_alk": high_alk, "average_alk": average_alk, 
-        "low_pem": low_pem, "high_pem": high_pem, "average_pem": average_pem}
+lcoh_data = {
+    "low_alk": low_alk,
+    "high_alk": high_alk,
+    "average_alk": average_alk,
+    "low_pem": low_pem,
+    "high_pem": high_pem,
+    "average_pem": average_pem,
+}
 
 
 # def capacity_factor(offshore_wind_lcoe=0.23, solar_lcoe=0.12, onshore_wind_lcoe=0.23):
@@ -53,48 +61,56 @@ lcoh_data = {"low_alk": low_alk, "high_alk": high_alk, "average_alk": average_al
 #         lcoh_data[f"{setting_type}_{tech_type}"] = pd.DataFrame(
 #             data).set_index('Index')
 
+
 def global_lcoh(electrolyzer_type="alk"):
     fig = go.Figure()
 
-    sources = ['offshore_wind_lcoe', 'solar_lcoe', 'onshore_wind_lcoe']
-    source_names = ['Offshore Wind LCOH', 'Solar LCOH', 'Onshore Wind LCOH']
-    colors = ['#636EFA', '#00CC96', '#FF6692']
+    sources = ["offshore_wind_lcoe", "solar_lcoe", "onshore_wind_lcoe"]
+    source_names = ["Offshore Wind LCOH", "Solar LCOH", "Onshore Wind LCOH"]
+    colors = ["#636EFA", "#00CC96", "#FF6692"]
 
     for idx, source in enumerate(sources):
         legend_group = f"group_{idx}"
 
-        fig.add_trace(go.Scatter(
-            x=lcoh_data[f'low_{electrolyzer_type}'].index.tolist() + lcoh_data[f'high_{electrolyzer_type}'].index.tolist()[::-1],
-            y=lcoh_data[f'low_{electrolyzer_type}'][source].tolist() + lcoh_data[f'high_{electrolyzer_type}'][source].tolist()[::-1],
-            fill='toself',
-            fillcolor=f'rgba({int(colors[idx][1:3], 16)}, {int(colors[idx][3:5], 16)}, {int(colors[idx][5:7], 16)}, 0.2)',
-            line=dict(color='rgba(255,255,255,0)'),
-            showlegend=False,
-            legendgroup=legend_group,
-            hoverinfo='skip'  # this trace will not display hover info
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=lcoh_data[f"low_{electrolyzer_type}"].index.tolist()
+                + lcoh_data[f"high_{electrolyzer_type}"].index.tolist()[::-1],
+                y=lcoh_data[f"low_{electrolyzer_type}"][source].tolist()
+                + lcoh_data[f"high_{electrolyzer_type}"][source].tolist()[::-1],
+                fill="toself",
+                fillcolor=f"rgba({int(colors[idx][1:3], 16)}, {int(colors[idx][3:5], 16)}, {int(colors[idx][5:7], 16)}, 0.2)",
+                line=dict(color="rgba(255,255,255,0)"),
+                showlegend=False,
+                legendgroup=legend_group,
+                hoverinfo="skip",
+            )
+        )
 
-        fig.add_trace(go.Scatter(
-            x=lcoh_data[f'average_{electrolyzer_type}'].index,
-            y=lcoh_data[f'average_{electrolyzer_type}'][source],
-            mode='lines',
-            line=dict(color=colors[idx]),
-            name=source_names[idx],
-            legendgroup=legend_group,
-            hovertemplate='Year: %{x}<br>' + source_names[idx] + ': %{y:.2f}<extra></extra>',  # customize hover template here
-        ))
-
+        fig.add_trace(
+            go.Scatter(
+                x=lcoh_data[f"average_{electrolyzer_type}"].index,
+                y=lcoh_data[f"average_{electrolyzer_type}"][source],
+                mode="lines",
+                line=dict(color=colors[idx]),
+                name=source_names[idx],
+                legendgroup=legend_group,
+                hovertemplate="Year: %{x}<br>"
+                + source_names[idx]
+                + ": %{y:.2f}<extra></extra>",
+            )
+        )
 
     fig.update_layout(
         yaxis=dict(
-            title_text='LCOH ($/kg<sub>H<sub>2</sub></sub>)',
-            title_font=dict(family='Arial, bold', size=20),
-            tickfont=dict(family='Arial, bold', size=16),
+            title_text="LCOH ($/kg<sub>H<sub>2</sub></sub>)",
+            title_font=dict(family="Arial, bold", size=20),
+            tickfont=dict(family="Arial, bold", size=16),
         ),
         xaxis=dict(
-            title_text='Electricity Price ($/kWh)',
-            title_font=dict(family='Arial, bold', size=20),
-            tickfont=dict(family='Arial, bold', size=16),
+            title_text="Electricity Price ($/kWh)",
+            title_font=dict(family="Arial, bold", size=20),
+            tickfont=dict(family="Arial, bold", size=16),
         ),
         legend=dict(
             orientation="h",
@@ -103,19 +119,15 @@ def global_lcoh(electrolyzer_type="alk"):
             xanchor="center",
             x=0.5,
             traceorder="normal",
-            font=dict(
-                family="Arial Bold",
-                size=16,
-                color="black"
-            ),
+            font=dict(family="Arial Bold", size=16, color="black"),
             bordercolor="Black",
             borderwidth=2,
-            itemsizing='constant'
+            itemsizing="constant",
         ),
-        legend_title_text='',
+        legend_title_text="",
         margin=dict(
-            t=50,  
-        )
+            t=50,
+        ),
     )
 
     return fig

@@ -21,7 +21,7 @@ work_hour                    = 2080                     #hr/yr
 overhead_rate                = 0.2                      #%
 price_conversion_factor      = 1
 mech_installed_factor        = 1
-elect_installed_factor       = 1.12
+elect_installed_factor       = 1.12 #meaning = 1.12*electrolyzer_cost
 total_elect_usage_percent    = 1.1
 
 
@@ -44,3 +44,4 @@ percent_salvage                    = 0.1
 percent_var                        = 0.75
 percent_fixed                      = 0.75
 percent_revs                       = 0.5
+

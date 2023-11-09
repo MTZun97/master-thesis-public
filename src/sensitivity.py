@@ -5,9 +5,20 @@ from lcoh import cash_flow
 import plotly.express as px
 import plotly.graph_objects as go
 
-def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, current_density=1.5,
-           electrolzyer_cost=1000, electrolyzer_efficiency=50, stack_percent=0.6,
-           mech_percent=0.2, elect_percent=0.2, water_rate=0.00237495008, elect_price=0.036):
+
+def sensitivity_analysis(
+    percent_change=0.3,
+    startup_year=2020,
+    cap_factor=0.5,
+    current_density=1.5,
+    electrolzyer_cost=1000,
+    electrolyzer_efficiency=50,
+    stack_percent=0.6,
+    mech_percent=0.2,
+    elect_percent=0.2,
+    water_rate=0.00237495008,
+    elect_price=0.036,
+):
     params = {
         "startup_year": startup_year,
         "cap_factor": cap_factor,
@@ -18,8 +29,15 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         "mech_percent": mech_percent,
         "elect_percent": elect_percent,
         "water_rate": water_rate,
-        "elect_df": (pd.DataFrame.from_dict({"year": range(1983, 2100), "electricity_price": [elect_price] * len(range(1983, 2100))})
-                     .set_index("year"))}
+        "elect_df": (
+            pd.DataFrame.from_dict(
+                {
+                    "year": range(1983, 2100),
+                    "electricity_price": [elect_price] * len(range(1983, 2100)),
+                }
+            ).set_index("year")
+        ),
+    }
 
     params_low = {
         "startup_year": startup_year,
@@ -31,8 +49,16 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         "mech_percent": mech_percent,
         "elect_percent": elect_percent,
         "water_rate": water_rate * (1 - percent_change),
-        "elect_df": (pd.DataFrame.from_dict({"year": range(1983, 2100), "electricity_price": [elect_price * (1 - percent_change)] * len(range(1983, 2100))})
-                     .set_index("year"))}
+        "elect_df": (
+            pd.DataFrame.from_dict(
+                {
+                    "year": range(1983, 2100),
+                    "electricity_price": [elect_price * (1 - percent_change)]
+                    * len(range(1983, 2100)),
+                }
+            ).set_index("year")
+        ),
+    }
 
     params_high = {
         "startup_year": startup_year,
@@ -44,45 +70,64 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
         "mech_percent": mech_percent,
         "elect_percent": elect_percent,
         "water_rate": water_rate * (1 + percent_change),
-        "elect_df": (pd.DataFrame.from_dict({"year": range(1983, 2100), "electricity_price": [elect_price * (1 + percent_change)] * len(range(1983, 2100))})
-                     .set_index("year"))}
-
- 
+        "elect_df": (
+            pd.DataFrame.from_dict(
+                {
+                    "year": range(1983, 2100),
+                    "electricity_price": [elect_price * (1 + percent_change)]
+                    * len(range(1983, 2100)),
+                }
+            ).set_index("year")
+        ),
+    }
 
     lcoh_base = {}
     lcoh_low = {}
     lcoh_high = {}
     label_mapping = {
-    "cap_factor": "Capacity Factor",
-    "electrolyzer_cost": "Electrolyzer Cost",
-    "electrolyzer_efficiency": "Electrolyzer Efficiency",
-    "elect_df": "Electricity Cost",
-    "water_rate": "Water Rate"
-}
+        "cap_factor": "Capacity Factor",
+        "electrolyzer_cost": "Electrolyzer Cost",
+        "electrolyzer_efficiency": "Electrolyzer Efficiency",
+        "elect_df": "Electricity Cost",
+        "water_rate": "Water Rate",
+    }
 
-
-    keys = ["cap_factor", "electrolyzer_cost",
-            "electrolyzer_efficiency", "elect_df", "water_rate"]
+    keys = [
+        "cap_factor",
+        "electrolyzer_cost",
+        "electrolyzer_efficiency",
+        "elect_df",
+        "water_rate",
+    ]
     variables = [
         params["cap_factor"],
         params["electrolyzer_cost"],
         params["electrolyzer_efficiency"],
         params["elect_df"],
-        params["water_rate"]]
+        params["water_rate"],
+    ]
 
     for key, variable in zip(keys, variables):
         lcoh_base[key] = cash_flow(**params)[0]
         lcoh_low[key] = cash_flow(**{**params, key: params_low[key]})[0]
         lcoh_high[key] = cash_flow(**{**params, key: params_high[key]})[0]
 
+    percentage_change = {
+        key: {
+            "low": (lcoh_low[key] - lcoh_base[key]) / lcoh_base[key] * 100,
+            "high": (lcoh_high[key] - lcoh_base[key]) / lcoh_base[key] * 100,
+        }
+        for key in keys
+    }
 
-    percentage_change = {key: {"low": (lcoh_low[key] - lcoh_base[key]) / lcoh_base[key] * 100,
-                            "high": (lcoh_high[key] - lcoh_base[key]) / lcoh_base[key] * 100} for key in keys}
-
-
-    ordered_keys = sorted(keys, key=lambda x: max(abs(percentage_change[x]["low"]), abs(percentage_change[x]["high"])), reverse=False)
+    ordered_keys = sorted(
+        keys,
+        key=lambda x: max(
+            abs(percentage_change[x]["low"]), abs(percentage_change[x]["high"])
+        ),
+        reverse=False,
+    )
     display_labels = [label_mapping[key] for key in ordered_keys]
-
 
     low_data = [percentage_change[key]["low"] for key in ordered_keys]
     high_data = [percentage_change[key]["high"] for key in ordered_keys]
@@ -93,51 +138,44 @@ def sensitivity_analysis(percent_change=0.3, startup_year=2020, cap_factor=0.5, 
 
     fig = go.Figure()
 
-
-    fig.add_trace(go.Bar(
-        y=display_labels,
-        x=low_data,
-        customdata=[(base, low) for base, low in zip(base_values, low_values)],
-        hovertemplate='Percent Change: %{x:.2f}%<br>Base LCOH: %{customdata[0]:.2f}<br>Low LCOH: %{customdata[1]:.2f}',
-        orientation='h',
-        name='Low',
-        marker=dict(
-            color='#636EFA',
-            line=dict(
-                color='#636EFA',
-                width=3)
+    fig.add_trace(
+        go.Bar(
+            y=display_labels,
+            x=low_data,
+            customdata=[(base, low) for base, low in zip(base_values, low_values)],
+            hovertemplate="Percent Change: %{x:.2f}%<br>Base LCOH: %{customdata[0]:.2f}<br>Low LCOH: %{customdata[1]:.2f}",
+            orientation="h",
+            name="Low",
+            marker=dict(color="#636EFA", line=dict(color="#636EFA", width=3)),
         )
-    ))
+    )
 
-
-    fig.add_trace(go.Bar(
-        y=display_labels,
-        x=high_data,
-        customdata=[(base, high) for base, high in zip(base_values, high_values)],
-        hovertemplate='Percent Change: %{x:.2f}%<br>Base LCOH: %{customdata[0]:.2f}<br>High LCOH: %{customdata[1]:.2f}',
-        orientation='h',
-        name='High',
-        marker=dict(
-            color='#FF6692',
-            line=dict(
-                color='#FF6692',
-                width=3)
+    fig.add_trace(
+        go.Bar(
+            y=display_labels,
+            x=high_data,
+            customdata=[(base, high) for base, high in zip(base_values, high_values)],
+            hovertemplate="Percent Change: %{x:.2f}%<br>Base LCOH: %{customdata[0]:.2f}<br>High LCOH: %{customdata[1]:.2f}",
+            orientation="h",
+            name="High",
+            marker=dict(color="#FF6692", line=dict(color="#FF6692", width=3)),
         )
-    ))
-
+    )
 
     fig.update_layout(
         xaxis=dict(
-            title_text='Percentage Change in LCOH (%)',
-            title_font=dict(family='Arial, bold', size=20),
-            tickfont=dict(family='Arial, bold', size=16),
+            title_text="Percentage Change in LCOH (%)",
+            title_font=dict(family="Arial, bold", size=20),
+            tickfont=dict(family="Arial, bold", size=16),
         ),
         yaxis=dict(
-            tickfont=dict(family='Arial, bold', size=16),
+            tickfont=dict(family="Arial, bold", size=16),
             tickvals=list(range(len(ordered_keys))),
         ),
-        barmode='relative', showlegend=False, title_x=0.5, 
-        title_font=dict(size=20, family='Arial Bold', color='black')
+        barmode="relative",
+        showlegend=False,
+        title_x=0.5,
+        title_font=dict(size=20, family="Arial Bold", color="black"),
     )
 
     return fig
