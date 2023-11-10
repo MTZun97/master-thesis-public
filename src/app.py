@@ -926,7 +926,7 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                html.A("Citation", href="", target="_blank"),
+                html.A("Citation", href="https://www.mdpi.com/2673-4141/4/4/55", target="_blank"),
                 html.Span("  |  "),
                 html.A(
                     "Report an issue or suggestion",
